@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        jar="/Users/steveh/AndroidStudioProjects/VenueLock/app/build/intermediates/incremental-classes/debug/classes.jar"
+        jumboMode="false"
+        revision="23.0.2"
+        sha1="07a014106297f05a3ca3e15a533df6aac16b6d27">
+        <dex dex="/Users/steveh/AndroidStudioProjects/VenueLock/app/build/intermediates/transforms/dex/debug/folders/1000/10/classes_50afd2dab3e7bab1f1fbc181deed62992ddb1b8f/classes.dex" />
+    </item>
+
+</items>
