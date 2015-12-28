@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="s2-geometry-java">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/app/libs/s2-geometry-java.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

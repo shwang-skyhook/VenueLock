@@ -1,2 +1,0 @@
-/Users/steveh/AndroidStudioProjects/VenueLock/app/build/intermediates/transforms/instantRun/debug/folders/1/1/main/com/skyhookwireless/venuelock/ScanFragment.class
-/Users/steveh/AndroidStudioProjects/VenueLock/app/build/intermediates/transforms/instantRun/debug/folders/1/1/main/com/skyhookwireless/venuelock/ScanFragment$1.class
