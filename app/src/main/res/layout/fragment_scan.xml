@@ -28,7 +28,7 @@
 
             <Button
                 android:id="@+id/startScanButton"
-                android:text="Start Scan"
+                android:text="Start Scanning"
                 android:onClick="onStartScanButtonClicked"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -38,7 +38,7 @@
 
             <Button
         android:id="@+id/stopScanButton"
-        android:text="Stop Scan"
+        android:text="Stop Scanning"
         android:onClick="onStopScanButtonClicked"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -120,7 +120,12 @@ public class ScanActivity extends AppCompatActivity
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             fileName = scanFragment.getFileName();
-            new UploadLogTask2().execute(fileName);
+            if (fileName != null) {
+                new UploadLogTask().execute(fileName);
+            }
+            else {
+                scanFragment.scanTextView.setText("No Scans created");
+            }
             return true;
         }
 
@@ -251,9 +256,8 @@ public class ScanActivity extends AppCompatActivity
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
 
-    class UploadLogTask2 extends AsyncTask<String, Void, Boolean> {
-        protected Boolean doInBackground(String... filename) {
-            try {
+    class UploadLogTask extends AsyncTask<String, Void, Response> {
+        protected Response doInBackground(String... filename) {
                 String url = "http://contextdev3.skyhookwireless.com/venuelock-research-server/rest/upload";
                 File textFile = new File(Environment.getExternalStorageDirectory(), filename[0]);
 
@@ -275,25 +279,26 @@ public class ScanActivity extends AppCompatActivity
 
                     Response response = client.newCall(request).execute();
                     System.out.println(response.toString());
+                    return response;
 
                 } catch (Exception e) {
                     e.printStackTrace();
-                }
+                    return null;
 
-            }
-            catch(Exception e)
-            {
-                e.printStackTrace();
-                return Boolean.FALSE;
-            }
-            return Boolean.TRUE;
+                }
         }
-        protected void onPostExcecute(Boolean b) {
-            if (b) {
-                scanFragment.scanTextView.setText(fileName + " synced");
+        @Override
+        protected void onPostExecute(Response r) {
+            if (r != null) {
+                if (r.code() != 200) {
+                    scanFragment.scanTextView.setText("Error when syncing\n Response code: " + r.code() + "\nCould not sync file");
+                }
+                else {
+                    scanFragment.scanTextView.setText(fileName + "\n synced");
+                }
             }
             else {
-                scanFragment.scanTextView.setText("Error when syncing");
+                scanFragment.scanTextView.setText("Error when syncing\n Could not sync file");
             }
         }
     }
