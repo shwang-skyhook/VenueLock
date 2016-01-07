@@ -1,23 +1,42 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/scrollView"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior" >
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.skyhookwireless.venuelock.ScanFragment">
-
-    <Button
-        android:id="@+id/startScanButton"
-        android:text="Start Scan"
-        android:onClick="onStartScanButtonClicked"
-        android:layout_width="wrap_content"
+            <EditText
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="5dp" />
+        android:id="@+id/fileNameEditText"
+        android:inputType="text"
+                android:imeOptions="actionDone"
+                android:digits="0123456789qwertzuiopasdfghjklyxcvbnm"
+                android:text="default"
+                android:hint="Only letters and digits allowed"
+                />
 
-    <Button
+            <Button
+                android:id="@+id/startScanButton"
+                android:text="Start Scan"
+                android:onClick="onStartScanButtonClicked"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_below="@+id/fileNameEditText" />
+
+
+            <Button
         android:id="@+id/stopScanButton"
         android:text="Stop Scan"
         android:onClick="onStopScanButtonClicked"
@@ -25,8 +44,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/startScanButton" />
-
-    <Button
+            <Button
         android:id="@+id/outsideButton"
         android:text="Outside (Within 100 Meters)"
         android:onClick="onOutsideButtonClicked"
@@ -34,8 +52,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/stopScanButton" />
-
-    <Button
+            <Button
         android:id="@+id/nearbyButton"
         android:text="Nearby (Within 20 Meters)"
         android:onClick="onNearbyButtonClicked"
@@ -43,8 +60,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/outsideButton"
         android:layout_alignParentStart="true" />
-
-    <Button
+            <Button
         android:id="@+id/veryCloseButton"
         android:text="Very Close (Within 5M)"
         android:onClick="onVeryCloseButtonClicked"
@@ -52,8 +68,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/nearbyButton"
         android:layout_alignParentStart="true" />
-
-    <Button
+            <Button
         android:id="@+id/justInsideButton"
         android:text="Just Inside (Within 2-5M of Entrance)"
         android:onClick="onJustInsideButtonClicked"
@@ -61,8 +76,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/veryCloseButton"
         android:layout_alignParentStart="true" />
-
-    <Button
+            <Button
         android:id="@+id/completelyInsideButton"
         android:text="Completely Inside (Greater than 5M)"
         android:onClick="onCompletelyInsideButtonClicked"
@@ -71,13 +85,14 @@
         android:layout_below="@+id/justInsideButton"
         android:layout_alignParentStart="true" />
 
-    <TextView
-        android:id="@+id/scanTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/completelyInsideButton"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:text="@string/hello_world" />
+            <TextView
+                android:id="@+id/scanTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/completelyInsideButton"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:text="@string/hello_world" />
 
 </RelativeLayout>
+</ScrollView>

@@ -9,12 +9,15 @@ import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.telephony.CellInfo;
 import android.telephony.TelephonyManager;
+import android.text.InputFilter;
+import android.text.Spanned;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -44,6 +47,7 @@ public class ScanFragment extends Fragment implements View.OnClickListener{
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_scan, container, false);
+        fileNameEditText = (EditText) view.findViewById(R.id.fileNameEditText);
         startScanButton = (Button) view.findViewById(R.id.startScanButton);
         startScanButton.setOnClickListener(this);
         stopScanButton = (Button) view.findViewById(R.id.stopScanButton);
@@ -82,13 +86,23 @@ public class ScanFragment extends Fragment implements View.OnClickListener{
             case R.id.startScanButton:
                 startScanButton.setEnabled(false);
                 stopScanButton.setEnabled(true);
-                filename = getDate();
+                fileNameEditText.setFocusable(false);
+                if (fileNameEditText.getText() != null) {
+                    filename = "venuelock-" + fileNameEditText.getText().toString() +"-" + getDate()+ ".txt";
+                }
+                else {
+                    filename = "venuelock-" + getDate()+ ".txt";
+                }
                 mHandler.postDelayed(mStatusChecker, interval);
                 break;
             case R.id.stopScanButton:
+                scanSB.setLength(0);
+                fileNameEditText.setFocusableInTouchMode(true);
+                fileNameEditText.setFocusable(true);
                 startScanButton.setEnabled(true);
                 stopScanButton.setEnabled(false);
                 mHandler.removeCallbacks(mStatusChecker);
+                scanTextView.setText("Scan Finished with " + numScans + " scans.\n ");
                 numScans = 0;
                 break;
             case R.id.outsideButton:
@@ -128,13 +142,14 @@ public class ScanFragment extends Fragment implements View.OnClickListener{
         if (isExternalStorageWritable())
         {
             try {
-                file = new File(Environment.getExternalStorageDirectory(), "venuelock-"+filename+".txt");
+                file = new File(Environment.getExternalStorageDirectory(), filename);
                 outputstream = new FileOutputStream(file);
                 outputstream.write(scanSB.toString().getBytes());
                 outputstream.close();
             }
             catch (IOException e) {
                 Log.e("Exception", "File write failed: " + e.toString());
+                showToast("Exception, File write failed: " + e.toString());
             }
             scanTextView.setText(filename + "\nScan " +new Integer(numScans+1).toString()+"\n");
         }
@@ -174,6 +189,10 @@ public class ScanFragment extends Fragment implements View.OnClickListener{
         Toast.makeText(getActivity().getApplicationContext(), toastString, Toast.LENGTH_SHORT).show();
     }
 
+    public String getFileName(){
+        return filename;
+    }
+
     private File file;
     private FileOutputStream outputstream;
     private WifiManager wifiManager;
@@ -183,8 +202,10 @@ public class ScanFragment extends Fragment implements View.OnClickListener{
     private int interval = 5000;
     private Handler mHandler;
     private int numScans = 0;
-    private Button startScanButton, stopScanButton;
+    private Button startScanButton, stopScanButton, setFileNameButton;
+    private EditText fileNameEditText;
     TextView scanTextView;
-    String filename, gTruth, proximity;
+    String filename, gTruth, proximity, customFileName;
     TelephonyManager cellManager;
+
 }

@@ -2,6 +2,7 @@ package com.skyhookwireless.venuelock;
 
 import android.location.Location;
 import android.os.Bundle;
+import android.provider.SyncStateContract;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -56,15 +57,15 @@ public class VenueMapFragment extends Fragment {
         }
         googleMap = mapView.getMap();
         googleMap.setMyLocationEnabled(true);
-
-        googleMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
-
-            @Override
-            public void onMyLocationChange(Location arg0) {
-                //googleMap.addMarker(new MarkerOptions().position(new LatLng(arg0.getLatitude(), arg0.getLongitude())).title("It's Me!"));
-                CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(arg0.getLatitude(), arg0.getLongitude()), 10);
-            }
-        });
+//        googleMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
+//
+//            @Override
+//            public void onMyLocationChange(Location arg0) {
+//                //googleMap.addMarker(new MarkerOptions().position(new LatLng(arg0.getLatitude(), arg0.getLongitude())).title("It's Me!"));
+//                //CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(arg0.getLatitude(), arg0.getLongitude()), 10);
+//
+//            }
+//        });
         return rootView;
     }
     @Override
