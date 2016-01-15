@@ -3,9 +3,11 @@ package com.skyhookwireless.venuelock;
 import android.Manifest;
 import android.app.Activity;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Environment;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -72,8 +74,17 @@ public class ScanActivity extends AppCompatActivity
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
-        verifyStoragePermissions(this);
 
+        String[] PERMISSIONS = {Manifest.permission_group.LOCATION,
+                                //Manifest.permission_group.STORAGE,
+                                Manifest.permission.CHANGE_WIFI_STATE,
+                                //Manifest.permission.GET_ACCOUNTS,
+                                Manifest.permission.INTERNET,
+                                Manifest.permission.ACCESS_NETWORK_STATE};
+
+        if(!hasPermissions(this, PERMISSIONS)){
+            ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
+        }
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -236,9 +247,19 @@ public class ScanActivity extends AppCompatActivity
             );
         }
     }
-
+    public static boolean hasPermissions(Context context, String... permissions) {
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && context != null && permissions != null) {
+            for (String permission : permissions) {
+                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    private static final int PERMISSION_ALL = 1;
     private static String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE

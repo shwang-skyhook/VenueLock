@@ -46,6 +46,7 @@ public class ScanFragment extends Fragment implements View.OnClickListener{
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_scan, container, false);
         fileNameEditText = (EditText) view.findViewById(R.id.fileNameEditText);
+
         startScanButton = (Button) view.findViewById(R.id.startScanButton);
         startScanButton.setOnClickListener(this);
         stopScanButton = (Button) view.findViewById(R.id.stopScanButton);
@@ -132,7 +133,9 @@ public class ScanFragment extends Fragment implements View.OnClickListener{
     }
 
     public String getScans() {
-        wifiList = wifiManager.getScanResults();
+        if (wifiManager.startScan()) {
+          wifiList = wifiManager.getScanResults();
+        }
         cellList = cellManager.getAllCellInfo();
         scanSB.append("Scan number " + new Integer(numScans+1).toString() + " (" + proximity + "):\n");
         scanSB.append(wifiList.toString() + "\n");
