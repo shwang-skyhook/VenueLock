@@ -105,41 +105,49 @@ public class ScanFragment extends Fragment implements View.OnClickListener{
                 numScans = 0;
                 break;
             case R.id.outsideButton:
-                //scanSB.append("Outside \n");
                 proximity = "Outside";
                 showToast(proximity);
                 break;
             case R.id.nearbyButton:
                 proximity = "Nearby";
                 showToast(proximity);
-                //scanSB.append("Nearby \n");
                 break;
             case R.id.veryCloseButton:
                 proximity = "Very Close";
                 showToast(proximity);
-                //scanSB.append("Very Close \n");
                 break;
             case R.id.justInsideButton:
                 proximity = "Just Inside";
                 showToast(proximity);
-                //scanSB.append("Just Inside \n");
                 break;
             case R.id.completelyInsideButton:
                 proximity = "Completely Inside";
                 showToast(proximity);
-                //scanSB.append("Completely Inside \n");
                 break;
         }
     }
 
     public String getScans() {
-        if (wifiManager.startScan()) {
-          wifiList = wifiManager.getScanResults();
+        scanSB.append("Scan number " + new Integer(numScans+1).toString() + " (" + proximity + "):\n");
+//        if (wifiManager.startScan()) {
+//            final List<ScanResult> wifiList = wifiManager.getScanResults();
+//            for (final ScanResult wifiScan : wifiList) {
+//                scanSB.append(wifiScan.toString());
+//                scanSB.append("THIS IS ONE SCANRESULT\n");
+//            }
+//
+//        }
+
+
+        wifiList = wifiManager.getScanResults();
+        for (ScanResult wifiScan : wifiList) {
+            scanSB.append(wifiScan.toString()+"\n");
         }
         cellList = cellManager.getAllCellInfo();
-        scanSB.append("Scan number " + new Integer(numScans+1).toString() + " (" + proximity + "):\n");
-        scanSB.append(wifiList.toString() + "\n");
-        scanSB.append(cellList.toString() + "\n");
+        for (CellInfo cellScan : cellList) {
+            scanSB.append(cellScan.toString() + "\n");
+        }
+
         if (isExternalStorageWritable())
         {
             try {

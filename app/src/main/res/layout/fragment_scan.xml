@@ -23,8 +23,7 @@
             android:hint="Use User-Venue Format"
             android:imeOptions="actionDone"
             android:inputType="text"
-            android:singleLine="true"
-            android:text="User-Venue" />
+            android:singleLine="true"/>
 
         <Button
             android:id="@+id/startScanButton"
