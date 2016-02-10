@@ -19,7 +19,7 @@
             android:id="@+id/fileNameEditText"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:digits="0123456789ABCDEFGHIJKLMNOPQRSTUWXYZabcdefghijklmnopqrstuwxyz_-"
+            android:digits="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_-"
             android:hint="Use User-Venue Format"
             android:imeOptions="actionDone"
             android:inputType="text"

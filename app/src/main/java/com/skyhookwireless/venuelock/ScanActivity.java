@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -39,9 +40,22 @@ import okhttp3.Response;
 
 
 public class ScanActivity extends AppCompatActivity
-        implements  AcceleratorClient.OnConnectionFailedListener,
-                    AcceleratorClient.ConnectionCallbacks,
-                    AcceleratorClient.OnRegisterForCampaignMonitoringResultListener {
+        implements AcceleratorClient.OnConnectionFailedListener,
+        AcceleratorClient.ConnectionCallbacks,
+        AcceleratorClient.OnRegisterForCampaignMonitoringResultListener,
+        AcceleratorClient.OnStopCampaignMonitoringResultListener,
+        AcceleratorClient.OnStartCampaignMonitoringResultListener {
+
+    @Override
+    public void onStopCampaignMonitoringResult(int i, String s) {
+
+    }
+
+    @Override
+    public void onStartCampaignMonitoringResult(int i, String s) {
+        boolean monitoringAll = accelerator.isMonitoringAllCampaigns();
+    }
+
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -76,13 +90,13 @@ public class ScanActivity extends AppCompatActivity
         tabLayout.setupWithViewPager(mViewPager);
 
         String[] PERMISSIONS = {Manifest.permission_group.LOCATION,
-                                //Manifest.permission_group.STORAGE,
-                                Manifest.permission.CHANGE_WIFI_STATE,
-                                //Manifest.permission.GET_ACCOUNTS,
-                                Manifest.permission.INTERNET,
-                                Manifest.permission.ACCESS_NETWORK_STATE};
+                //Manifest.permission_group.STORAGE,
+                Manifest.permission.CHANGE_WIFI_STATE,
+                //Manifest.permission.GET_ACCOUNTS,
+                Manifest.permission.INTERNET,
+                Manifest.permission.ACCESS_NETWORK_STATE};
 
-        if(!hasPermissions(this, PERMISSIONS)){
+        if (!hasPermissions(this, PERMISSIONS)) {
             ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
         }
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -121,8 +135,7 @@ public class ScanActivity extends AppCompatActivity
             fileName = scanFragment.getFileName();
             if (fileName != null) {
                 new UploadLogTask().execute(fileName);
-            }
-            else {
+            } else {
                 scanFragment.scanTextView.setText("No Scans created");
             }
             return true;
@@ -147,6 +160,10 @@ public class ScanActivity extends AppCompatActivity
     @Override
     public void onConnected() {
 
+        Intent intent = new Intent(this, AcceleratorIntentService.class);
+        PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        accelerator.registerForCampaignMonitoring(pendingIntent, this);
+
     }
 
     @Override
@@ -161,7 +178,8 @@ public class ScanActivity extends AppCompatActivity
 
     @Override
     public void onRegisterForCampaignMonitoringResult(int i, PendingIntent pendingIntent) {
-
+        accelerator.stopMonitoringForAllCampaigns(this);
+        accelerator.startMonitoringForAllCampaigns(this);
     }
 
     /**
@@ -183,7 +201,7 @@ public class ScanActivity extends AppCompatActivity
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
-            switch (position){
+            switch (position) {
                 case 0:
                     return VenueMapFragment.newInstance(1);
                 case 1:
@@ -247,6 +265,7 @@ public class ScanActivity extends AppCompatActivity
             );
         }
     }
+
     public static boolean hasPermissions(Context context, String... permissions) {
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && context != null && permissions != null) {
             for (String permission : permissions) {
@@ -267,47 +286,46 @@ public class ScanActivity extends AppCompatActivity
 
     class UploadLogTask extends AsyncTask<String, Void, Response> {
         protected Response doInBackground(String... filename) {
-                String url = "http://contextdev3.skyhookwireless.com/venuelock-research-server/rest/upload";
-                File textFile = new File(Environment.getExternalStorageDirectory(), filename[0]);
+            String url = "http://contextdev3.skyhookwireless.com/venuelock-research-server/rest/upload";
+            File textFile = new File(Environment.getExternalStorageDirectory(), filename[0]);
 
-                try {
-                    OkHttpClient client = new OkHttpClient();
+            try {
+                OkHttpClient client = new OkHttpClient();
 
-                    MediaType mediaType = MediaType.parse("multipart/form-data;");
-                    RequestBody body = RequestBody.create(mediaType, textFile);
+                MediaType mediaType = MediaType.parse("multipart/form-data;");
+                RequestBody body = RequestBody.create(mediaType, textFile);
 
-                    MultipartBody m = new MultipartBody.Builder()
-                            .setType(MultipartBody.FORM)
-                            .addFormDataPart("file", textFile.getName(), body)
-                            .build();
+                MultipartBody m = new MultipartBody.Builder()
+                        .setType(MultipartBody.FORM)
+                        .addFormDataPart("file", textFile.getName(), body)
+                        .build();
 
-                    Request request = new Request.Builder()
-                            .url(url)
-                            .post(m)
-                            .build();
+                Request request = new Request.Builder()
+                        .url(url)
+                        .post(m)
+                        .build();
 
-                    Response response = client.newCall(request).execute();
-                    System.out.println(response.toString());
-                    return response;
+                Response response = client.newCall(request).execute();
+                System.out.println(response.toString());
+                return response;
 
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return null;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
 
-                }
+            }
         }
+
         @Override
         protected void onPostExecute(Response r) {
             if (r != null) {
                 if (r.code() != 200) {
                     scanFragment.scanTextView.setText("Error when syncing\n Response code: " + r.code() + "\nCould not sync file");
-                }
-                else {
+                } else {
                     scanFragment.scanTextView.setText(fileName + "\n synced");
                 }
-            }
-            else {
-                scanFragment.scanTextView.setText("Error when syncing\n Could not sync file");
+            } else {
+                scanFragment.scanTextView.setText("Error when syncing\nCould not sync file\nNo response");
             }
         }
     }

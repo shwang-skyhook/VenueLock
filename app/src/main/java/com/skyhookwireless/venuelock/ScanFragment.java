@@ -128,24 +128,21 @@ public class ScanFragment extends Fragment implements View.OnClickListener{
     }
 
     public String getScans() {
-        scanSB.append("Scan number " + new Integer(numScans+1).toString() + " (" + proximity + "):\n");
-//        if (wifiManager.startScan()) {
-//            final List<ScanResult> wifiList = wifiManager.getScanResults();
-//            for (final ScanResult wifiScan : wifiList) {
-//                scanSB.append(wifiScan.toString());
-//                scanSB.append("THIS IS ONE SCANRESULT\n");
-//            }
-//
-//        }
-
+        //scanSB.append("Scan number " + new Integer(numScans+1).toString() + " (" + proximity + "):\n");
 
         wifiList = wifiManager.getScanResults();
         for (ScanResult wifiScan : wifiList) {
-            scanSB.append(wifiScan.toString()+"\n");
+            scanSB.append(filename + ", Scan "
+                    + new Integer(numScans+1).toString() + ", "
+                    + proximity + ", "
+                    + wifiScan.toString()+"\n");
         }
         cellList = cellManager.getAllCellInfo();
         for (CellInfo cellScan : cellList) {
-            scanSB.append(cellScan.toString() + "\n");
+            scanSB.append(filename + ", Scan "
+                    + new Integer(numScans+1).toString() + ", "
+                    + proximity + ", "
+                    + cellScan.toString() + "\n");
         }
 
         if (isExternalStorageWritable())
@@ -160,7 +157,7 @@ public class ScanFragment extends Fragment implements View.OnClickListener{
                 Log.e("Exception", "File write failed: " + e.toString());
                 showToast("Exception, File write failed: " + e.toString());
             }
-            scanTextView.setText(filename + "\nScan " +new Integer(numScans+1).toString()+"\n");
+            scanTextView.setText(filename + "\nScan " +new Integer(numScans+1).toString()+", Proximity: "+proximity+"\n");
         }
         numScans++;
         return scanSB.toString();
@@ -211,10 +208,10 @@ public class ScanFragment extends Fragment implements View.OnClickListener{
     private int interval = 5000;
     private Handler mHandler;
     private int numScans = 0;
-    private Button startScanButton, stopScanButton, setFileNameButton;
+    private Button startScanButton, stopScanButton;
     private EditText fileNameEditText;
     TextView scanTextView;
-    String filename, gTruth, proximity, customFileName;
-    TelephonyManager cellManager;
+    String filename, proximity;
+    private TelephonyManager cellManager;
 
 }
