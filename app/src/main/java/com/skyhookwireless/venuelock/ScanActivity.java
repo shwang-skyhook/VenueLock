@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.net.wifi.ScanResult;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
@@ -30,6 +31,7 @@ import android.view.ViewGroup;
 import com.skyhookwireless.accelerator.AcceleratorClient;
 
 import java.io.File;
+import java.util.List;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -40,7 +42,8 @@ import okhttp3.Response;
 
 
 public class ScanActivity extends AppCompatActivity
-        implements AcceleratorClient.OnConnectionFailedListener,
+        implements ScanFragment.onScanDataReceivedListener,
+        AcceleratorClient.OnConnectionFailedListener,
         AcceleratorClient.ConnectionCallbacks,
         AcceleratorClient.OnRegisterForCampaignMonitoringResultListener,
         AcceleratorClient.OnStopCampaignMonitoringResultListener,
@@ -54,6 +57,21 @@ public class ScanActivity extends AppCompatActivity
     @Override
     public void onStartCampaignMonitoringResult(int i, String s) {
         boolean monitoringAll = accelerator.isMonitoringAllCampaigns();
+    }
+
+    @Override
+    public void sendScanData(List<ScanResult> wifiList) {
+        blankFragment.setScanList(wifiList);
+    }
+
+    @Override
+    public void stopScanning() {
+        blankFragment.stopScanning();
+    }
+
+    @Override
+    public void startScanning() {
+        blankFragment.parseScan();
     }
 
 

@@ -1,5 +1,6 @@
 package com.skyhookwireless.venuelock;
 
+import android.app.Activity;
 import android.content.Context;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
@@ -39,6 +40,25 @@ public class ScanFragment extends Fragment implements View.OnClickListener{
         ScanFragment fragment = new ScanFragment();
         return fragment;
     }
+
+    public interface onScanDataReceivedListener {
+        public void sendScanData(List<ScanResult> wifiList);
+
+        public void stopScanning();
+        public void startScanning();
+    }
+
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        try {
+            scanDataReceivedListener = (onScanDataReceivedListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString() + " must implement onSomeEventListener");
+        }
+    }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -93,6 +113,7 @@ public class ScanFragment extends Fragment implements View.OnClickListener{
                     filename = "venuelock-" + getDate()+ ".txt";
                 }
                 mHandler.postDelayed(mStatusChecker, interval);
+                scanDataReceivedListener.startScanning();
                 break;
             case R.id.stopScanButton:
                 scanSB.setLength(0);
@@ -101,6 +122,7 @@ public class ScanFragment extends Fragment implements View.OnClickListener{
                 startScanButton.setEnabled(true);
                 stopScanButton.setEnabled(false);
                 mHandler.removeCallbacks(mStatusChecker);
+                scanDataReceivedListener.stopScanning();
                 scanTextView.setText("Scan Finished with " + numScans + " scans.\n ");
                 numScans = 0;
                 break;
@@ -131,12 +153,14 @@ public class ScanFragment extends Fragment implements View.OnClickListener{
         //scanSB.append("Scan number " + new Integer(numScans+1).toString() + " (" + proximity + "):\n");
 
         wifiList = wifiManager.getScanResults();
+        scanDataReceivedListener.sendScanData(wifiList);
         for (ScanResult wifiScan : wifiList) {
             scanSB.append(filename + ", Scan "
                     + new Integer(numScans+1).toString() + ", "
                     + proximity + ", "
                     + wifiScan.toString()+"\n");
         }
+
         cellList = cellManager.getAllCellInfo();
         for (CellInfo cellScan : cellList) {
             scanSB.append(filename + ", Scan "
@@ -160,6 +184,7 @@ public class ScanFragment extends Fragment implements View.OnClickListener{
             scanTextView.setText(filename + "\nScan " +new Integer(numScans+1).toString()+", Proximity: "+proximity+"\n");
         }
         numScans++;
+
         return scanSB.toString();
     }
 
@@ -213,5 +238,5 @@ public class ScanFragment extends Fragment implements View.OnClickListener{
     TextView scanTextView;
     String filename, proximity;
     private TelephonyManager cellManager;
-
+    onScanDataReceivedListener scanDataReceivedListener;
 }
