@@ -1,5 +1,6 @@
 package com.skyhookwireless.venuelock;
 
+import android.app.Activity;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.database.SQLException;
@@ -58,6 +59,10 @@ public class BlankFragment extends Fragment {
         // Required empty public constructor
     }
 
+    public interface onVenueTriggeredListener {
+        public void plotVenue(ScannedVenue scannedVenue);
+    }
+
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
@@ -92,7 +97,7 @@ public class BlankFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_blank, container, false);
-        strings = new LinkedList<String>(Arrays.asList("No Scans Yet"));
+        //strings = new LinkedList<String>(Arrays.asList("No Scans Yet"));
         stringAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, strings);
 
         lv = (ListView) view.findViewById(R.id.listView);
@@ -121,8 +126,18 @@ public class BlankFragment extends Fragment {
 //        } else {
 //            throw new RuntimeException(context.toString()
 //                    + " must implement OnFragmentInteractionListener");
-//        }
+//
 
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        try {
+            venueTriggeredListener = (onVenueTriggeredListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString() + " must implement onSomeEventListener");
+        }
     }
 
     @Override
@@ -146,105 +161,148 @@ public class BlankFragment extends Fragment {
         void onFragmentInteraction(Uri uri);
     }
 
-
+    public void clearTriggers() {
+        mHandler.removeCallbacks(mStatusChecker);
+        currentScanTriggers.clear();
+        strings.clear();
+        stringAdapter.notifyDataSetChanged();
+    }
     public void setScanList(List<ScanResult> wifiList) {
         this.scans = wifiList;
     }
 
     public void stopScanning() {
+        parseCount = 0;
+        currentScanTriggers.clear();
         mHandler.removeCallbacks(mStatusChecker);
-        myDbHelper.closeDataBase();
+        //myDbHelper.closeDataBase();
+    }
+
+    public void startScanning() {
+        //initializeDB();
+        parseCount = 0;
+        parseScan();
     }
 
     public void parseScan() {
-        strings.clear();
-        triggers.clear();
-        initializeDB();
-        new queryDB().execute(this.scans);
-        mHandler.postDelayed(mStatusChecker, interval);
+        parseCount++;
+        try {
+            if (parseCount > 10) {
+                mHandler.removeCallbacks(mStatusChecker);
+            }
+            new queryDB().execute(this.scans);
+            mHandler.postDelayed(mStatusChecker, interval);
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
     }
 
     //class queryDB extends AsyncTask<List<ScanResult>, Void, Map<String, Integer>> {
 
-    class queryDB extends AsyncTask<List<ScanResult>, Void, String> {
+    class queryDB extends AsyncTask<List<ScanResult>, Void, ScannedVenue> {
 
-        protected String doInBackground(List<ScanResult>... wifiList) {
+        protected ScannedVenue doInBackground(List<ScanResult>... wifiList) {
             // using this.mContext
+            initializeDB();
 
-            HashMap<String, Integer> vidToCount = new HashMap<>();
-            if (wifiList !=null) {
+            if (currentScanTriggers.size()>15) {
+                currentScanTriggers.clear();
+            }
+            HashMap<String, ScannedVenue> vidToScannedVenueCaseA = new HashMap<>();
+            HashMap<String, ScannedVenue> vidToScannedVenueCaseB = new HashMap<>();
+
+            if (wifiList != null) {
                 for (ScanResult sr : wifiList[0]) {
-                    //filter rssi < -75
-                    if (sr.level > -75) {
-                        //remove ":" from mac
-                        String vid = myDbHelper.getVidForMac(sr.BSSID.replace(":", ""));
-                        //insert vid and count into map
-                        if (!vid.equals("")) {
-                            int count = vidToCount.containsKey(vid) ? vidToCount.get(vid) : 0;
-                            vidToCount.put(vid, count + 1);
+                    //filter rssi < -80
+                    if (sr.level > -80) {
+                        if (sr.level > -75) {
+                            //remove ":" from mac
+                            String vid = myDbHelper.getVidForMac(sr.BSSID.replace(":", "").toUpperCase());
+                            //insert vid and count into map
+                            if (!vid.equals("")) {
+                                if (vidToScannedVenueCaseA.containsKey(vid)) {
+                                    vidToScannedVenueCaseA.get(vid).IncrementCount();
+                                } else {
+                                    ScannedVenue scannedVenue = myDbHelper.getScannedVenue(sr.BSSID.replace(":", "").toUpperCase());
+                                    if (scannedVenue != null) {
+                                        vidToScannedVenueCaseA.put(vid, scannedVenue);
+                                    }
+                                }
+                            }
+                        }
+                        else {
+                            //remove ":" from mac
+                            String vid = myDbHelper.getVidForMac(sr.BSSID.replace(":", "").toUpperCase());
+                            //insert vid and count into map
+                            if (!vid.equals("")) {
+                                if (vidToScannedVenueCaseB.containsKey(vid)) {
+                                    vidToScannedVenueCaseB.get(vid).IncrementCount();
+                                } else {
+                                    ScannedVenue scannedVenue = myDbHelper.getScannedVenue(sr.BSSID.replace(":", "").toUpperCase());
+                                    if (scannedVenue != null) {
+                                        vidToScannedVenueCaseB.put(vid, scannedVenue);
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             }
 
-            if(vidToCount !=null && !vidToCount.isEmpty()) {
+
+            if (vidToScannedVenueCaseA != null && !vidToScannedVenueCaseA.isEmpty()) {
                 //case A algorithm
-                switch(vidToCount.size()) {
+                switch (vidToScannedVenueCaseA.size()) {
                     case 0:
-                        return "";
-                    case 1:
-                        //TODO implement Case B
-                        for (String vid: vidToCount.keySet()) {
-                            if (vidToCount.get(vid) > 1) {
-                                return vid;
-                            }
-                            else {
-                                return vid;
-                            }
-                        }
+                        return null;
                     default:
                         Integer secondHighest = Integer.MIN_VALUE;
                         Integer highest = Integer.MIN_VALUE;
+                        Integer current = Integer.MIN_VALUE;
                         String venueId = "";
-                        for (String vid: vidToCount.keySet()) {
-                            if (vidToCount.get(vid) > highest) {
+                        for (String vid : vidToScannedVenueCaseA.keySet()) {
+                            current = vidToScannedVenueCaseA.get(vid).getCount();
+                            if (current > highest) {
                                 secondHighest = highest;
-                                highest = vidToCount.get(vid);
+                                highest = current;
                                 venueId = vid;
-                            }
-                            else if (vidToCount.get(vid) > secondHighest) {
-                                secondHighest = vidToCount.get(vid);
+                            } else if (current > secondHighest) {
+                                secondHighest = current;
                             }
                         }
                         if (highest >= secondHighest + 2) {
-                            return venueId;
+                            return vidToScannedVenueCaseA.get(venueId);
+                        } else {
+                            return null;
                         }
-                        else {
-                            return "";
-                        }
+                }
+            }
+            else if (vidToScannedVenueCaseB != null && vidToScannedVenueCaseB.size() == 1) {
+                for (String vid : vidToScannedVenueCaseB.keySet()) {
+                    if (vidToScannedVenueCaseB.get(vid).getCount() > 1) {
+                        return vidToScannedVenueCaseB.get(vid);
+                    } else {
+                        return vidToScannedVenueCaseB.get(vid);
                     }
                 }
-            return "";
+            }
+            return null;
         }
 
-        protected void onPostExecute(String vid) {
-//            if (vidToCount.size() > 0) {
-//                for (Map.Entry<String, Integer> entry : vidToCount.entrySet()) {
-//                    if (!triggers.contains(entry.getKey())) {
-//                        triggers.add(entry.getKey());
-//                        strings.add(entry.getKey() + " " + getDate());
-//                    }
-//                }
-//            }
-            if (vid != "") {
-                if (!triggers.contains(vid))
-                {
-                    triggers.add(vid);
-                    for (String venues : triggers) {
+        protected void onPostExecute(ScannedVenue scannedVenue) {
+            myDbHelper.closeDataBase();
+
+            if (scannedVenue != null) {
+                if (!currentScanTriggers.contains(scannedVenue.getName())){
+                    currentScanTriggers.add(scannedVenue.getName());
+                    for (String venues : currentScanTriggers) {
                         showNotification(venues);
-                        showToast("Triggered venue: " + vid);
+                        showToast("Triggered venue: " + scannedVenue.getName());
+                        venueTriggeredListener.plotVenue(scannedVenue);
                     }
-                    strings.add(vid);
+                    strings.add(scannedVenue.getName() + " " +getDate());
                 }
                 stringAdapter.notifyDataSetChanged();
             }
@@ -252,6 +310,7 @@ public class BlankFragment extends Fragment {
 
 
     }
+
     private void initializeDB() {
         myDbHelper = new DataBaseHelper(getActivity().getApplicationContext());
         try {
@@ -265,6 +324,7 @@ public class BlankFragment extends Fragment {
             throw sqle;
         }
     }
+
     Runnable mStatusChecker = new Runnable() {
         @Override
         public void run() {
@@ -301,12 +361,14 @@ public class BlankFragment extends Fragment {
 
     private List<ScanResult> scans = new LinkedList<ScanResult>();
     private List<String> strings = new LinkedList<String>();
-    private List<String> triggers = new LinkedList<String>();
+    private List<String> currentScanTriggers = new LinkedList<String>();
     private ArrayAdapter<String> stringAdapter;
     private DataBaseHelper myDbHelper;
     private Handler mHandler;
-    private int interval = 10000;
+    private int interval = 8000;
     private ListView lv;
-    private NotificationCompat.Builder  mBuilder;
+    private Integer parseCount;
+    private NotificationCompat.Builder mBuilder;
+    onVenueTriggeredListener venueTriggeredListener;
 
 }

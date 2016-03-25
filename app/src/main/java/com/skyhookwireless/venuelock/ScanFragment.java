@@ -1,7 +1,13 @@
 package com.skyhookwireless.venuelock;
 
 import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
 import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -32,7 +38,7 @@ import java.util.List;
 /**
  * Created by steveh on 12/15/15.
  */
-public class ScanFragment extends Fragment implements View.OnClickListener{
+public class ScanFragment extends Fragment implements View.OnClickListener, SensorEventListener {
     public ScanFragment() {
     }
 
@@ -47,7 +53,48 @@ public class ScanFragment extends Fragment implements View.OnClickListener{
         public void stopScanning();
         public void startScanning();
     }
+    @Override
+    public void onPause() {
+        super.onPause();
+        sensorManager.unregisterListener(this);
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        sensorManager.registerListener(this, senAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        Sensor mySensor = event.sensor;
+
+        if (mySensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            float x = event.values[0];
+            float y = event.values[1];
+            float z = event.values[2];
+            long curTime = System.currentTimeMillis();
+
+            if ((curTime - lastUpdate) > 100) {
+                long diffTime = (curTime - lastUpdate);
+                lastUpdate = curTime;
+
+                float speed = Math.abs(x + y + z - last_x - last_y - last_z)/ diffTime * 10000;
+
+                if (speed > SHAKE_THRESHOLD) {
+                }
+
+                last_x = x;
+                last_y = y;
+                last_z = z;
+            }
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
 
     @Override
     public void onAttach(Activity activity) {
@@ -65,7 +112,8 @@ public class ScanFragment extends Fragment implements View.OnClickListener{
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_scan, container, false);
-        fileNameEditText = (EditText) view.findViewById(R.id.fileNameEditText);
+        venueEditText = (EditText) view.findViewById(R.id.venueEditText);
+        userEditText = (EditText) view.findViewById(R.id.userEditText);
 
         startScanButton = (Button) view.findViewById(R.id.startScanButton);
         startScanButton.setOnClickListener(this);
@@ -92,6 +140,12 @@ public class ScanFragment extends Fragment implements View.OnClickListener{
         scanTextView.setMovementMethod(new ScrollingMovementMethod());
         wifiManager = (WifiManager) getActivity().getSystemService(Context.WIFI_SERVICE);
         cellManager = (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
+        btManager = (BluetoothManager) getActivity().getSystemService(Context.BLUETOOTH_SERVICE);
+        btAdapter = btManager.getAdapter();
+        sensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
+        senAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        sensorManager.registerListener(this, senAccelerometer , SensorManager.SENSOR_DELAY_NORMAL);
+
     }
 
     @Override
@@ -105,9 +159,15 @@ public class ScanFragment extends Fragment implements View.OnClickListener{
             case R.id.startScanButton:
                 startScanButton.setEnabled(false);
                 stopScanButton.setEnabled(true);
-                fileNameEditText.setFocusable(false);
-                if (fileNameEditText.getText() != null) {
-                    filename = "venuelock-" + fileNameEditText.getText().toString() +"-" + getDate()+ ".txt";
+                venueEditText.setFocusable(false);
+                userEditText.setFocusable(false);
+                if (venueEditText.getText() != null && userEditText.getText() != null) {
+                    if (venueEditText.getText().toString().isEmpty() && userEditText.getText().toString().isEmpty()) {
+                        filename = "venuelock-" + getDate()+ ".txt";
+                    }
+                    else {
+                        filename = "venuelock-" + "-" + userEditText.getText().toString() + "-" + venueEditText.getText().toString() +"-" + getDate()+ ".txt";
+                    }
                 }
                 else {
                     filename = "venuelock-" + getDate()+ ".txt";
@@ -117,8 +177,11 @@ public class ScanFragment extends Fragment implements View.OnClickListener{
                 break;
             case R.id.stopScanButton:
                 scanSB.setLength(0);
-                fileNameEditText.setFocusableInTouchMode(true);
-                fileNameEditText.setFocusable(true);
+                venueEditText.setFocusableInTouchMode(true);
+                venueEditText.setFocusable(true);
+                userEditText.setFocusableInTouchMode(true);
+                userEditText.setFocusable(true);
+
                 startScanButton.setEnabled(true);
                 stopScanButton.setEnabled(false);
                 mHandler.removeCallbacks(mStatusChecker);
@@ -168,6 +231,7 @@ public class ScanFragment extends Fragment implements View.OnClickListener{
                     + proximity + ", "
                     + cellScan.toString() + "\n");
         }
+
 
         if (isExternalStorageWritable())
         {
@@ -230,13 +294,22 @@ public class ScanFragment extends Fragment implements View.OnClickListener{
     private List<ScanResult> wifiList;
     private List<CellInfo> cellList;
     private StringBuilder scanSB = new StringBuilder();
-    private int interval = 5000;
+    private int interval = 3000;
     private Handler mHandler;
     private int numScans = 0;
     private Button startScanButton, stopScanButton;
-    private EditText fileNameEditText;
+    private EditText venueEditText;
+    private EditText userEditText;
     TextView scanTextView;
     String filename, proximity;
     private TelephonyManager cellManager;
+    private BluetoothManager btManager;
+    private BluetoothAdapter btAdapter;
+    private SensorManager sensorManager;
+    private Sensor senAccelerometer;
     onScanDataReceivedListener scanDataReceivedListener;
+
+    private long lastUpdate = 0;
+    private float last_x, last_y, last_z;
+    private static final int SHAKE_THRESHOLD = 600;
 }

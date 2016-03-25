@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -15,6 +16,8 @@ import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
@@ -42,13 +45,13 @@ import okhttp3.Response;
 
 
 public class ScanActivity extends AppCompatActivity
-        implements ScanFragment.onScanDataReceivedListener,
+        implements BlankFragment.onVenueTriggeredListener,
+        ScanFragment.onScanDataReceivedListener,
         AcceleratorClient.OnConnectionFailedListener,
         AcceleratorClient.ConnectionCallbacks,
         AcceleratorClient.OnRegisterForCampaignMonitoringResultListener,
         AcceleratorClient.OnStopCampaignMonitoringResultListener,
-        AcceleratorClient.OnStartCampaignMonitoringResultListener {
-
+        AcceleratorClient.OnStartCampaignMonitoringResultListener{
     @Override
     public void onStopCampaignMonitoringResult(int i, String s) {
 
@@ -67,12 +70,40 @@ public class ScanActivity extends AppCompatActivity
     @Override
     public void stopScanning() {
         blankFragment.stopScanning();
+
+        new AlertDialog.Builder(this)
+                .setTitle("Save Scan Session on Server?")
+                .setMessage("Scan sessions are always saved locally.")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // continue with delete
+                        fileName = scanFragment.getFileName();
+                        if (fileName != null) {
+                            new UploadLogTask().execute(fileName);
+                        } else {
+                            scanFragment.scanTextView.setText("No Scans created");
+                        }
+                    }
+                })
+                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing
+                    }
+                })
+                .setIcon(android.R.drawable.ic_menu_save)
+                .show();
     }
 
     @Override
     public void startScanning() {
-        blankFragment.parseScan();
+        blankFragment.startScanning();
     }
+
+    @Override
+    public void plotVenue(ScannedVenue scannedVenue) {
+        venueMapFragment.plotTriggeredVenue(scannedVenue);
+    }
+
 
 
     /**
@@ -95,6 +126,7 @@ public class ScanActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scan);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        verifyPermissions(this);
         setSupportActionBar(toolbar);
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
@@ -107,16 +139,8 @@ public class ScanActivity extends AppCompatActivity
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
-        String[] PERMISSIONS = {Manifest.permission_group.LOCATION,
-                //Manifest.permission_group.STORAGE,
-                Manifest.permission.CHANGE_WIFI_STATE,
-                //Manifest.permission.GET_ACCOUNTS,
-                Manifest.permission.INTERNET,
-                Manifest.permission.ACCESS_NETWORK_STATE};
 
-        if (!hasPermissions(this, PERMISSIONS)) {
-            ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
-        }
+
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -129,8 +153,8 @@ public class ScanActivity extends AppCompatActivity
             }
         });
 
-        accelerator = new AcceleratorClient(this, ALEX_KEY, this, this);
-        accelerator.connect();
+        //accelerator = new AcceleratorClient(this, ALEX_KEY, this, this);
+        //accelerator.connect();
 
     }
 
@@ -158,6 +182,11 @@ public class ScanActivity extends AppCompatActivity
             }
             return true;
         }
+        else if (id == R.id.action_clear_triggers) {
+            blankFragment.clearTriggers();
+            venueMapFragment.clearMarkers();
+            return true;
+        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -168,7 +197,8 @@ public class ScanActivity extends AppCompatActivity
 
     @Override
     protected void onDestroy() {
-        accelerator.disconnect();
+        if (accelerator != null) {accelerator.disconnect();
+        }
         super.onDestroy();
     }
 
@@ -221,13 +251,13 @@ public class ScanActivity extends AppCompatActivity
             // Return a PlaceholderFragment (defined as a static inner class below).
             switch (position) {
                 case 0:
-                    return VenueMapFragment.newInstance(1);
-                case 1:
                     return ScanFragment.newInstance();
+                case 1:
+                    return VenueMapFragment.newInstance(1);
                 case 2:
                     return BlankFragment.newInstance("i", "i");
             }
-            return VenueMapFragment.newInstance(position + 1);
+            return ScanFragment.newInstance();
         }
 
         @Override
@@ -236,11 +266,11 @@ public class ScanActivity extends AppCompatActivity
             // save the appropriate reference depending on position
             switch (position) {
                 case 0:
-                    venueMapFragment = (VenueMapFragment) createdFragment;
-                    break;
-                case 1:
                     scanFragment = (ScanFragment) createdFragment;
                     //scanFragment.setFileName(blankFragment.getFileName());
+                    break;
+                case 1:
+                    venueMapFragment = (VenueMapFragment) createdFragment;
                     break;
                 case 2:
                     blankFragment = (BlankFragment) createdFragment;
@@ -260,42 +290,54 @@ public class ScanActivity extends AppCompatActivity
         public CharSequence getPageTitle(int position) {
             switch (position) {
                 case 0:
-                    return "Map";
-                case 1:
                     return "Scans";
+                case 1:
+                    return "Map";
                 case 2:
-                    return "TODO";
+                    return "Venues";
             }
             return null;
         }
     }
 
-    public static void verifyStoragePermissions(Activity activity) {
-        // Check if we have write permission
-        int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-
-        if (permission != PackageManager.PERMISSION_GRANTED) {
-            // We don't have permission so prompt the user
-            ActivityCompat.requestPermissions(
-                    activity,
-                    PERMISSIONS_STORAGE,
-                    REQUEST_EXTERNAL_STORAGE
-            );
-        }
-    }
-
-    public static boolean hasPermissions(Context context, String... permissions) {
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && context != null && permissions != null) {
-            for (String permission : permissions) {
-                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
-                    return false;
-                }
+    public void verifyPermissions(Activity activity) {
+        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                //// show explanation asynchronously
+            }
+            else {
+                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE}, MY_PERMISSIONS_REQUEST_LOCATION);
             }
         }
-        return true;
     }
 
-    private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_LOCATION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+    }
+
+
+    private static final int MY_PERMISSIONS_REQUEST_LOCATION = 1;
     private static final int PERMISSION_ALL = 1;
     private static String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,

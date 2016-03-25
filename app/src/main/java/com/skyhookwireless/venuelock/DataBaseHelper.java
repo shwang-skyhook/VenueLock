@@ -140,30 +140,51 @@ public class DataBaseHelper extends SQLiteOpenHelper
     // Add your public helper methods to access and get content from the database.
     // You could return cursors by doing "return myDataBase.query(....)" so it'd be easy
     // to you to create adapters for your views.
-    public int getCount() {
-        String countQuery = "SELECT  * FROM venue_mac_boston;";
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery(countQuery, null);
-        int n = cursor.getCount();
-        int col = cursor.getColumnCount();
-        cursor.close();
 
-        // return count
-        return n;
-    }
 
     public String getVidForMac(String mac) {
-        String getVidQuery = "select vid from venue_mac_boston where _id=\"" + mac + "\"" ;
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery(getVidQuery, null);
         String s = "";
-        cursor.moveToFirst();
-        if (cursor.getCount() >= 1)
-        {
-            s = cursor.getString(0);
+        try {
+            String getVidQuery = "select vid from venue_mac_boston where _id=\"" + mac + "\"" ;
+            SQLiteDatabase db = this.getReadableDatabase();
+            Cursor cursor = db.rawQuery(getVidQuery, null);
+            cursor.moveToFirst();
+            if (cursor.getCount() >= 1)
+            {
+                s = cursor.getString(0);
+            }
+            cursor.close();
+            return s;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return s;
         }
-        cursor.close();
-        return s;
+
+    }
+
+
+    public ScannedVenue getScannedVenue(String mac) {
+        try {
+            String getVidQuery = "select * from venue_mac_boston where _id=\"" + mac + "\"" ;
+            SQLiteDatabase db = this.getReadableDatabase();
+            Cursor cursor = db.rawQuery(getVidQuery, null);
+            String s = "";
+            ScannedVenue scannedVenue = new ScannedVenue();
+
+            if (cursor.moveToFirst()) {
+                do {
+                    scannedVenue.setVID(cursor.getString(1));
+                    scannedVenue.setName(cursor.getString(2));
+                    scannedVenue.setvLatLng(cursor.getString(4), cursor.getString(5));
+                } while (cursor.moveToNext());
+            };
+
+            return scannedVenue;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
     }
 
 }

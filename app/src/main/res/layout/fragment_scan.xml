@@ -16,23 +16,35 @@
         tools:context="com.skyhookwireless.venuelock.ScanFragment">
 
         <EditText
-            android:id="@+id/fileNameEditText"
+            android:id="@+id/venueEditText"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:digits="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_-"
-            android:hint="Use User-Venue Format"
+            android:hint="Venue"
             android:imeOptions="actionDone"
             android:inputType="text"
             android:singleLine="true"/>
+
+        <EditText
+            android:id="@+id/userEditText"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:digits="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_-"
+            android:hint="User"
+            android:imeOptions="actionDone"
+            android:inputType="text"
+            android:singleLine="true"
+            android:layout_below="@+id/venueEditText"
+            android:layout_alignParentStart="true" />
 
         <Button
             android:id="@+id/startScanButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
-            android:layout_below="@+id/fileNameEditText"
+            android:layout_below="@+id/userEditText"
             android:onClick="onStartScanButtonClicked"
-            android:text="Start Scanning" />
+            android:text="Start Scanning Session" />
 
 
         <Button

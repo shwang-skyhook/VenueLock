@@ -1,13 +1,18 @@
 package com.skyhookwireless.venuelock;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.SyncStateContract;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,19 +27,27 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 
 /**
  * Created by steveh on 12/16/15.
  */
-public class VenueMapFragment extends Fragment implements OnMapReadyCallback {
+public class VenueMapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMyLocationChangeListener {
     /**
      * The fragment argument representing the section number for this
      * fragment.
      */
     private static final String ARG_SECTION_NUMBER = "section_number";
+
 
     public VenueMapFragment() {
     }
@@ -51,6 +64,7 @@ public class VenueMapFragment extends Fragment implements OnMapReadyCallback {
         return fragment;
     }
 
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -60,41 +74,71 @@ public class VenueMapFragment extends Fragment implements OnMapReadyCallback {
         mapView.onCreate(savedInstanceState);
 
         mapView.onResume();
-
         try {
             MapsInitializer.initialize(getActivity().getApplicationContext());
         } catch (Exception e) {
             e.printStackTrace();
         }
         //mapView.getMapAsync(this);
-
         googleMap = mapView.getMap();
-        googleMap.setMyLocationEnabled(true);
+        verifyPermissions(getActivity());
+        //googleMap.setMyLocationEnabled(true);
 
-        googleMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
+        googleMap.setOnMyLocationChangeListener(this);
 
-            @Override
-            public void onMyLocationChange(Location arg0) {
-                //googleMap.addMarker(new MarkerOptions().position(new LatLng(arg0.getLatitude(), arg0.getLongitude())).title("It's Me!"));
-                CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(arg0.getLatitude(), arg0.getLongitude()), 10);
-            }
-        });
+//        centerMapOnMyLocation();
+
         return rootView;
-//        googleMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
-//
-//            @Override
-//            public void onMyLocationChange(Location arg0) {
-//                //googleMap.addMarker(new MarkerOptions().position(new LatLng(arg0.getLatitude(), arg0.getLongitude())).title("It's Me!"));
-//                //CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(arg0.getLatitude(), arg0.getLongitude()), 10);
-//
-//            }
-//        });
     }
+
+    public void verifyPermissions(Activity activity) {
+        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                //// show explanation asynchronously
+            }
+            else {
+                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE}, MY_PERMISSIONS_REQUEST_LOCATION);
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_LOCATION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+                    googleMap.setMyLocationEnabled(true);
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+    }
+
+    public void setupMap(){
+        googleMap.setMyLocationEnabled(true);
+    }
+
+
 
     @Override
     public void onResume() {
         super.onResume();
         mapView.onResume();
+        setupMap();
     }
 
     @Override
@@ -120,57 +164,59 @@ public class VenueMapFragment extends Fragment implements OnMapReadyCallback {
     }
 
 
-    MapView mapView;
-    private GoogleMap googleMap;
-    private LocationSource.OnLocationChangedListener mapLocationListener=null;
-
-
-
     @Override
     public void onMapReady(GoogleMap googleMap) {
         googleMap.setMyLocationEnabled(true);
-        googleMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
-
-            @Override
-            public void onMyLocationChange(Location arg0) {
-                //googleMap.addMarker(new MarkerOptions().position(new LatLng(arg0.getLatitude(), arg0.getLongitude())).title("It's Me!"));
-                CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(arg0.getLatitude(), arg0.getLongitude()), 10);
-            }
-        });
-
-        //Location loc= LocationServices.FusedLocationApi
-                //.getLastLocation(getPlayServices());
-        //Location loc = googleMap.getMyLocation();
-        //LatLng latLng = new LatLng(loc.getLatitude(), loc.getLongitude());
-        //googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 7.0f));
+       // centerMapOnMyLocation();
     }
-//    @Override
-//    public void onLocationChanged(Location location) {
-//        if (mapLocationListener != null) {
-//            mapLocationListener.onLocationChanged(location);
-//
-//            LatLng latlng=
-//                    new LatLng(location.getLatitude(), location.getLongitude());
-//            CameraUpdate cu=CameraUpdateFactory.newLatLng(latlng);
-//
-//            GoogleMap.animateCamera(cu);
-//        }
-//    }
-//
-//    @Override
-//    public void onStatusChanged(String provider, int status, Bundle extras) {
-//
-//    }
-//
-//    @Override
-//    public void onProviderEnabled(String provider) {
-//
-//    }
-//
-//    @Override
-//    public void onProviderDisabled(String provider) {
-//
-//    }
+
+    public void plotTriggeredVenue(ScannedVenue scannedVenue) {
+        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(scannedVenue.getvLatLng(), 17));
+
+        Marker myMarker = googleMap.addMarker(new MarkerOptions()
+                .position(scannedVenue.getvLatLng())
+                .title(scannedVenue.getName())
+                .snippet(getDate())
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
+    }
+
+    public void clearMarkers() {
+        googleMap.clear();
+    }
+
+    private String getDate() {
+        Date date = Calendar.getInstance().getTime();
+        SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy-HH:mm:ss");
+        String time = format.format(date);
+        return time;
+    }
+
+    public void centerMapOnMyLocation() {
 
 
+        Location location = googleMap.getMyLocation();
+
+        if (location != null) {
+            LatLng myLocation = new LatLng(location.getLatitude(),
+                    location.getLongitude());
+            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(myLocation, 17));
+
+        }
+    }
+
+    MapView mapView;
+    private GoogleMap googleMap;
+    private static final int MY_PERMISSIONS_REQUEST_LOCATION = 1;
+    private LocationSource.OnLocationChangedListener mapLocationListener=null;
+
+    @Override
+    public void onMyLocationChange(Location location) {
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 17);
+        if (location != null) {
+            LatLng myLocation = new LatLng(location.getLatitude(),
+                    location.getLongitude());
+            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(myLocation, 17));
+
+        }
+    }
 }
