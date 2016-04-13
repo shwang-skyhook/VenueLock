@@ -6,7 +6,7 @@
     android:scrollIndicators="right"
     android:fillViewport="true">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
@@ -24,7 +24,8 @@
             android:hint="Venue"
             android:imeOptions="actionDone"
             android:inputType="text"
-            android:singleLine="true"/>
+            android:singleLine="true"
+            android:layout_alignEnd="@+id/veryCloseButton" />
 
         <EditText
             android:id="@+id/userEditText"
@@ -35,8 +36,8 @@
             android:imeOptions="actionDone"
             android:inputType="text"
             android:singleLine="true"
-            android:layout_below="@+id/venueEditText"
-            android:layout_alignParentStart="true" />
+            android:layout_alignParentTop="true"
+            android:layout_toEndOf="@+id/venueEditText" />
 
         <Button
             android:id="@+id/startScanButton"
@@ -45,17 +46,17 @@
             android:layout_alignParentStart="true"
             android:layout_below="@+id/userEditText"
             android:onClick="onStartScanButtonClicked"
-            android:text="Start Scanning Session" />
+            android:text="Start" />
 
 
         <Button
             android:id="@+id/stopScanButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_below="@+id/startScanButton"
             android:onClick="onStopScanButtonClicked"
-            android:text="Stop Scanning" />
+            android:text="Stop"
+            android:layout_below="@+id/userEditText"
+            android:layout_toEndOf="@+id/venueEditText" />
 
         <Button
             android:id="@+id/outsideButton"
@@ -110,5 +111,5 @@
             android:layout_centerHorizontal="true"
             android:text="@string/hello_world" />
 
-    </LinearLayout>
+    </RelativeLayout>
 </ScrollView>
