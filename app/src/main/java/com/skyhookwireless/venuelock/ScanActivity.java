@@ -153,8 +153,8 @@ public class ScanActivity extends AppCompatActivity
             }
         });
 
-        //accelerator = new AcceleratorClient(this, ALEX_KEY, this, this);
-        //accelerator.connect();
+        accelerator = new AcceleratorClient(this, ALEX_KEY, this, this);
+        accelerator.connect();
 
     }
 
@@ -227,7 +227,7 @@ public class ScanActivity extends AppCompatActivity
     @Override
     public void onRegisterForCampaignMonitoringResult(int i, PendingIntent pendingIntent) {
         accelerator.stopMonitoringForAllCampaigns(this);
-        accelerator.startMonitoringForAllCampaigns(this);
+        //accelerator.startMonitoringForAllCampaigns(this);
     }
 
     /**

@@ -1,19 +1,26 @@
 package com.skyhookwireless.venuelock;
 
+import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.telephony.CellInfo;
 import android.telephony.TelephonyManager;
 import android.text.method.ScrollingMovementMethod;
@@ -166,7 +173,7 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
                         filename = "venuelock-" + getDate()+ ".txt";
                     }
                     else {
-                        filename = "venuelock-" + "-" + userEditText.getText().toString() + "-" + venueEditText.getText().toString() +"-" + getDate()+ ".txt";
+                        filename = "venuelock-" + userEditText.getText().toString() + "-" + venueEditText.getText().toString() +"-" + getDate()+ ".txt";
                     }
                 }
                 else {
@@ -232,6 +239,32 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
                     + cellScan.toString() + "\n");
         }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            if (ContextCompat.checkSelfPermission(getActivity() ,Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                mScanCallback = new ScanCallback() {
+                    @Override
+                    public void onScanResult(int callbackType, android.bluetooth.le.ScanResult result) {
+                        super.onScanResult(callbackType, result);
+                        //mLeDeviceListAdapter.addDevice(result.getDevice());
+                        //mLeDeviceListAdapter.notifyDataSetChanged();
+                        scanSB.append(filename + ", Scan "
+                                + new Integer(numScans+1).toString() + ", "
+                                + proximity + ", " + "Bluetooth: "
+                                + result.toString() + "\n");                    }
+                };
+            }
+        }
+
+        if (btAdapter.getState() != BluetoothAdapter.STATE_ON) {
+            btAdapter.enable(); }
+
+            //mLeDeviceListAdapter.clear();
+        btleScanner = btAdapter.getBluetoothLeScanner();
+        if(ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION ) == PackageManager.PERMISSION_GRANTED) {
+            btleScanner.startScan(mScanCallback);
+        }
+
+
 
         if (isExternalStorageWritable())
         {
@@ -284,9 +317,25 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
         Toast.makeText(getActivity().getApplicationContext(), toastString, Toast.LENGTH_SHORT).show();
     }
 
+
     public String getFileName(){
         return filename;
     }
+
+    // Device scan callback.
+    private BluetoothAdapter.LeScanCallback mLeScanCallback =
+            new BluetoothAdapter.LeScanCallback() {
+                @Override
+                public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            //mLeDeviceListAdapter.addDevice(device);
+                            //mLeDeviceListAdapter.notifyDataSetChanged();
+                        }
+                    });
+                }
+            };
 
     private File file;
     private FileOutputStream outputstream;
@@ -305,6 +354,9 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
     private TelephonyManager cellManager;
     private BluetoothManager btManager;
     private BluetoothAdapter btAdapter;
+    private BluetoothLeScanner btleScanner;
+    ScanCallback mScanCallback;
+
     private SensorManager sensorManager;
     private Sensor senAccelerometer;
     onScanDataReceivedListener scanDataReceivedListener;

@@ -129,6 +129,7 @@ public class VenueMapFragment extends Fragment implements OnMapReadyCallback, Go
     }
 
     public void setupMap(){
+        verifyPermissions(getActivity());
         googleMap.setMyLocationEnabled(true);
     }
 
