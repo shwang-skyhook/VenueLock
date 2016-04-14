@@ -17,4 +17,5 @@
         android:src="@mipmap/ic_crosshair"
         android:layout_gravity="center_vertical"
         android:layout_centerInParent="true"/>
+
 </RelativeLayout>

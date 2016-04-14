@@ -28,6 +28,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -143,8 +144,12 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         mHandler = new Handler();
+//        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+//
+//        if(imm != null){
+//            imm.toggleSoftInput(0, InputMethodManager.HIDE_IMPLICIT_ONLY);
+//        }
         scanTextView = (TextView) getActivity().findViewById(R.id.scanTextView);
-        scanTextView.setMovementMethod(new ScrollingMovementMethod());
         wifiManager = (WifiManager) getActivity().getSystemService(Context.WIFI_SERVICE);
         cellManager = (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
         btManager = (BluetoothManager) getActivity().getSystemService(Context.BLUETOOTH_SERVICE);
@@ -193,7 +198,7 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
                 stopScanButton.setEnabled(false);
                 mHandler.removeCallbacks(mStatusChecker);
                 scanDataReceivedListener.stopScanning();
-                scanTextView.setText("Scan Finished with " + numScans + " scans.\n ");
+                scanTextView.setText("Scan Finished with " + numScans + " scans.\n\n ");
                 numScans = 0;
                 break;
             case R.id.outsideButton:
@@ -245,8 +250,6 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
                     @Override
                     public void onScanResult(int callbackType, android.bluetooth.le.ScanResult result) {
                         super.onScanResult(callbackType, result);
-                        //mLeDeviceListAdapter.addDevice(result.getDevice());
-                        //mLeDeviceListAdapter.notifyDataSetChanged();
                         scanSB.append(filename + ", Scan "
                                 + new Integer(numScans+1).toString() + ", "
                                 + proximity + ", " + "Bluetooth: "
@@ -257,11 +260,11 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
 
         if (btAdapter.getState() != BluetoothAdapter.STATE_ON) {
             btAdapter.enable(); }
-
-            //mLeDeviceListAdapter.clear();
         btleScanner = btAdapter.getBluetoothLeScanner();
         if(ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION ) == PackageManager.PERMISSION_GRANTED) {
-            btleScanner.startScan(mScanCallback);
+            if (btleScanner != null) {
+                btleScanner.startScan(mScanCallback);
+            }
         }
 
 
@@ -278,7 +281,7 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
                 Log.e("Exception", "File write failed: " + e.toString());
                 showToast("Exception, File write failed: " + e.toString());
             }
-            scanTextView.setText(filename + "\nScan " +new Integer(numScans+1).toString()+", Proximity: "+proximity+"\n");
+            scanTextView.setText(filename + "\nScan " +new Integer(numScans+1).toString()+", Proximity: "+proximity+"\n\n");
         }
         numScans++;
 
