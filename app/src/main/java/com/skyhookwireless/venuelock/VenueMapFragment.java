@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -27,6 +28,7 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
@@ -176,7 +178,7 @@ public class VenueMapFragment extends Fragment implements OnMapReadyCallback, Go
                 .position(scannedVenue.getvLatLng())
                 .title(scannedVenue.getName())
                 .snippet(getDate())
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
+                .icon(getMarkerIcon("#FF7043")));
     }
 
     public void plotNearbyVenue(LatLng latlng, String name, Long id) {
@@ -184,7 +186,13 @@ public class VenueMapFragment extends Fragment implements OnMapReadyCallback, Go
                 .position(latlng)
                 .title(name)
                 .snippet(id.toString())
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+                .icon(getMarkerIcon("#303F9F")));
+    }
+
+    public BitmapDescriptor getMarkerIcon(String color) {
+        float[] hsv = new float[3];
+        Color.colorToHSV(Color.parseColor(color), hsv);
+        return BitmapDescriptorFactory.defaultMarker(hsv[0]);
     }
 
     public void clearMarkers() {
