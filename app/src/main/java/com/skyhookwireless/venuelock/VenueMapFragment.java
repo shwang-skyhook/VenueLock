@@ -82,11 +82,7 @@ public class VenueMapFragment extends Fragment implements OnMapReadyCallback, Go
         //mapView.getMapAsync(this);
         googleMap = mapView.getMap();
         verifyPermissions(getActivity());
-        //googleMap.setMyLocationEnabled(true);
-
         googleMap.setOnMyLocationChangeListener(this);
-
-//        centerMapOnMyLocation();
 
         return rootView;
     }
@@ -113,6 +109,7 @@ public class VenueMapFragment extends Fragment implements OnMapReadyCallback, Go
                     // permission was granted, yay! Do the
                     // contacts-related task you need to do.
                     googleMap.setMyLocationEnabled(true);
+                    googleMap.setOnMyLocationChangeListener(this);
 
                 } else {
 
@@ -130,6 +127,7 @@ public class VenueMapFragment extends Fragment implements OnMapReadyCallback, Go
 
     public void setupMap(){
         verifyPermissions(getActivity());
+
         googleMap.setMyLocationEnabled(true);
     }
 
@@ -181,6 +179,14 @@ public class VenueMapFragment extends Fragment implements OnMapReadyCallback, Go
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
     }
 
+    public void plotNearbyVenue(LatLng latlng, String name, Long id) {
+        Marker myMarker = googleMap.addMarker(new MarkerOptions()
+                .position(latlng)
+                .title(name)
+                .snippet(id.toString())
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+    }
+
     public void clearMarkers() {
         googleMap.clear();
     }
@@ -219,5 +225,7 @@ public class VenueMapFragment extends Fragment implements OnMapReadyCallback, Go
             googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(myLocation, 17));
 
         }
+        googleMap.setOnMyLocationChangeListener(null);
+
     }
 }

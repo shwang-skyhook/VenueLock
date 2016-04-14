@@ -31,9 +31,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.skyhookwireless.accelerator.AcceleratorClient;
+import com.skyhookwireless.accelerator.NearbyCampaignVenue;
+import com.skyhookwireless.accelerator.VenueInfo;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.MediaType;
@@ -60,6 +64,7 @@ public class ScanActivity extends AppCompatActivity
     @Override
     public void onStartCampaignMonitoringResult(int i, String s) {
         boolean monitoringAll = accelerator.isMonitoringAllCampaigns();
+        fetchNearbyMonitoredVenues();
     }
 
     @Override
@@ -96,6 +101,7 @@ public class ScanActivity extends AppCompatActivity
 
     @Override
     public void startScanning() {
+        fetchNearbyMonitoredVenues();
         blankFragment.startScanning();
     }
 
@@ -105,7 +111,37 @@ public class ScanActivity extends AppCompatActivity
     }
 
 
-
+    public void fetchNearbyMonitoredVenues() {
+        accelerator.fetchNearbyMonitoredVenues(25, new AcceleratorClient.NearbyMonitoredVenuesListener() {
+            @Override
+            public void onNearbyMonitoredVenuesFetched(List<NearbyCampaignVenue> venues) {
+                // Fetch venue information for nearby venues
+                List<Long> ids = new ArrayList<Long>(venues.size());
+                for (NearbyCampaignVenue venue : venues) {
+                    ids.add(venue.venueId);
+                }
+                accelerator.fetchVenueInfo(ids, new AcceleratorClient.VenueInfoListener() {
+                    @Override
+                    public void onVenueInfoFetched(List<VenueInfo> venues) {
+                        // handle venue information...
+                        for (VenueInfo venueInfo: venues) {
+                            LatLng position = new LatLng(venueInfo.latitude, venueInfo.longitude);
+                            venueMapFragment.plotNearbyVenue(position, venueInfo.name, venueInfo.venueId);
+                        }
+                    }
+                    @Override
+                    public void onVenueInfoError(int errorCode) {
+                        // handle fetch venue info error...
+                    }
+                });
+            }
+            @Override
+            public void onNearbyMonitoredVenuesError(int errorCode) {
+                // handle fetch venue info error...
+                Integer n = 0;
+            }
+        });
+    }
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
      * fragments for each of the sections. We use a
@@ -227,7 +263,7 @@ public class ScanActivity extends AppCompatActivity
     @Override
     public void onRegisterForCampaignMonitoringResult(int i, PendingIntent pendingIntent) {
         accelerator.stopMonitoringForAllCampaigns(this);
-        //accelerator.startMonitoringForAllCampaigns(this);
+        accelerator.startMonitoringForAllCampaigns(this);
     }
 
     /**
@@ -237,7 +273,7 @@ public class ScanActivity extends AppCompatActivity
 
     private final static String ACCELERATOR_KEY = "eJwVwUEKACAIBMBzjxHUUttjYH4q-ns0I034GxBvJ7GtZyzyzUozTKl6gHQ4Yi6rBN8HEUsLFA";
     private final static String ALEX_KEY = "eJwVwUsOABAMBcC1wzShXj-WRHspcXcx00qrXx-QclTgcy0hjhRyqBMjJyXUNodZDb8PEdQLLQ";
-
+    private final static String DEMO_KEY = "eJwVwUEKwDAIBMBzHiPoIqx7bIN-quTvoTOxwn8gc32YDb1NE1TmObDsHuNDYErh2ucCEtsLLA";
 
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
