@@ -39,6 +39,11 @@ public class AcceleratorIntentService extends IntentService {
                 if (venue != null) {
                     if (AcceleratorClient.getCampaignVenueTransition(intent) == CampaignVenue.CAMPAIGN_VENUE_TRANSITION_ENTER) {
                         //process enter transition...
+                        Intent myIntent = new Intent(this, ScanActivity.class);
+
+                        myIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        myIntent.putExtra("YourStringKey", "yourString");
+
                     } else {
                         //process exit transition...
                     }

@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -203,6 +204,20 @@ public class BlankFragment extends Fragment {
 
     class queryDB extends AsyncTask<List<ScanResult>, Void, ScannedVenue> {
 
+        private void addToHashmap(ScanResult sr, HashMap<String, ScannedVenue> hashmap, String vid) {
+            if (!vid.equals("")) {  //insert vid and count into map
+                if (hashmap.containsKey(vid)) {
+                    hashmap.get(vid).IncrementCount();
+                } else {
+                    ScannedVenue scannedVenue = myDbHelper.getScannedVenue(sr.BSSID.replace(":", "").toUpperCase());    //remove ":" from mac
+                    if (scannedVenue != null) {
+                        hashmap.put(vid, scannedVenue);
+                    }
+                }
+            }
+            return;
+        }
+
         protected ScannedVenue doInBackground(List<ScanResult>... wifiList) {
             // using this.mContext
             initializeDB();
@@ -210,60 +225,46 @@ public class BlankFragment extends Fragment {
             if (currentScanTriggers.size()>15) {
                 currentScanTriggers.clear();
             }
-            HashMap<String, ScannedVenue> vidToScannedVenueCaseA = new HashMap<>();
-            HashMap<String, ScannedVenue> vidToScannedVenueCaseB = new HashMap<>();
+
+            HashMap<String, ScannedVenue> vidToScannedVenueCaseAv2 = new HashMap<>();
+            HashMap<String, ScannedVenue> vidToScannedVenueCaseBv2 = new HashMap<>();
+            HashMap<String, ScannedVenue> vidToScannedVenueCaseCv2 = new HashMap<>();
 
             if (wifiList != null) {
                 for (ScanResult sr : wifiList[0]) {
-                    //filter rssi < -80
-                    if (sr.level > -80) {
+                    if (sr.level > -80) {   //filter rssi < -80
+                        String vid = myDbHelper.getVidForMac(sr.BSSID.replace(":", "").toUpperCase());  //remove ":" from mac
                         if (sr.level > -75) {
-                            //remove ":" from mac
-                            String vid = myDbHelper.getVidForMac(sr.BSSID.replace(":", "").toUpperCase());
-                            //insert vid and count into map
-                            if (!vid.equals("")) {
-                                if (vidToScannedVenueCaseA.containsKey(vid)) {
-                                    vidToScannedVenueCaseA.get(vid).IncrementCount();
-                                } else {
-                                    ScannedVenue scannedVenue = myDbHelper.getScannedVenue(sr.BSSID.replace(":", "").toUpperCase());
-                                    if (scannedVenue != null) {
-                                        vidToScannedVenueCaseA.put(vid, scannedVenue);
-                                    }
-                                }
+                            if (sr.level > -65) {
+                                addToHashmap(sr, vidToScannedVenueCaseAv2, vid);
                             }
+                            addToHashmap(sr, vidToScannedVenueCaseBv2, vid);
                         }
-                        else {
-                            //remove ":" from mac
-                            String vid = myDbHelper.getVidForMac(sr.BSSID.replace(":", "").toUpperCase());
-                            //insert vid and count into map
-                            if (!vid.equals("")) {
-                                if (vidToScannedVenueCaseB.containsKey(vid)) {
-                                    vidToScannedVenueCaseB.get(vid).IncrementCount();
-                                } else {
-                                    ScannedVenue scannedVenue = myDbHelper.getScannedVenue(sr.BSSID.replace(":", "").toUpperCase());
-                                    if (scannedVenue != null) {
-                                        vidToScannedVenueCaseB.put(vid, scannedVenue);
-                                    }
-                                }
-                            }
-                        }
+                        addToHashmap(sr, vidToScannedVenueCaseCv2, vid);
                     }
                 }
             }
 
-
-            if (vidToScannedVenueCaseA != null && !vidToScannedVenueCaseA.isEmpty()) {
+            if (vidToScannedVenueCaseAv2 != null && !vidToScannedVenueCaseAv2.isEmpty()) {
                 //case A algorithm
-                switch (vidToScannedVenueCaseA.size()) {
+                switch (vidToScannedVenueCaseAv2.size()) {
                     case 0:
-                        return null;
+                        break;
                     default:
+                        /*  a. Filter WiFi APs with Rssi >= -65
+                            b. Count number of APs per venue
+                            c. Ignore venues with one or two APs
+                            d. Lock to the venue with the maximum number of APs
+                        */
+
                         Integer secondHighest = Integer.MIN_VALUE;
                         Integer highest = Integer.MIN_VALUE;
                         Integer current = Integer.MIN_VALUE;
                         String venueId = "";
-                        for (String vid : vidToScannedVenueCaseA.keySet()) {
-                            current = vidToScannedVenueCaseA.get(vid).getCount();
+                        for (String vid : vidToScannedVenueCaseAv2.keySet()) {
+                            current = vidToScannedVenueCaseAv2.get(vid).getCount();
+                            if (current < 3)
+                                continue;
                             if (current > highest) {
                                 secondHighest = highest;
                                 highest = current;
@@ -272,22 +273,72 @@ public class BlankFragment extends Fragment {
                                 secondHighest = current;
                             }
                         }
-                        if (highest >= secondHighest + 2) {
-                            return vidToScannedVenueCaseA.get(venueId);
-                        } else {
-                            return null;
+                        if (venueId != "")
+                            return vidToScannedVenueCaseAv2.get(venueId);
+                        break;
+                }
+            }
+            if (vidToScannedVenueCaseBv2 != null && !vidToScannedVenueCaseBv2.isEmpty()) {
+                //case B algorithm
+                switch (vidToScannedVenueCaseBv2.size()) {
+                    case 0:
+                        break;
+                    default:
+                        /*  a. Filter WiFi APs with Rssi >=-75
+                            b. Count number of APs per venue
+                            c. If the venue with maximum count >= (the venue with the next higher count + 3), report the venue with the max count as venue lock
+                        */
+                        Integer secondHighest = Integer.MIN_VALUE;
+                        Integer highest = Integer.MIN_VALUE;
+                        Integer current = Integer.MIN_VALUE;
+                        String venueId = "";
+                        for (String vid : vidToScannedVenueCaseBv2.keySet()) {
+                            current = vidToScannedVenueCaseBv2.get(vid).getCount();
+                            if (current > highest) {
+                                secondHighest = highest;
+                                highest = current;
+                                venueId = vid;
+                            } else if (current > secondHighest) {
+                                secondHighest = current;
+                            }
                         }
+                        if (highest >= secondHighest + 3) {
+                            return vidToScannedVenueCaseBv2.get(venueId);
+                        }
+                        break;
                 }
             }
-            else if (vidToScannedVenueCaseB != null && vidToScannedVenueCaseB.size() == 1) {
-                for (String vid : vidToScannedVenueCaseB.keySet()) {
-                    if (vidToScannedVenueCaseB.get(vid).getCount() > 1) {
-                        return vidToScannedVenueCaseB.get(vid);
-                    } else {
-                        return vidToScannedVenueCaseB.get(vid);
-                    }
+            if (vidToScannedVenueCaseCv2 != null && !vidToScannedVenueCaseCv2.isEmpty()) {
+                //case C algorithm
+                switch (vidToScannedVenueCaseCv2.size()) {
+                    case 0:
+                        break;
+                    default:
+                        /*  a. Filter WiFi APs with Rssi >=-80
+                            b. Count number of APs per venue
+                            c. If the venue with maximum count >= (the venue with the next higher count + 4), report the venue with the max count as venue lock
+                        */
+                        Integer secondHighest = Integer.MIN_VALUE;
+                        Integer highest = Integer.MIN_VALUE;
+                        Integer current = Integer.MIN_VALUE;
+                        String venueId = "";
+                        for (String vid : vidToScannedVenueCaseCv2.keySet()) {
+                            current = vidToScannedVenueCaseCv2.get(vid).getCount();
+                            if (current > highest) {
+                                secondHighest = highest;
+                                highest = current;
+                                venueId = vid;
+                            } else if (current > secondHighest) {
+                                secondHighest = current;
+                            }
+                        }
+                        if (highest >= secondHighest + 4) {
+                            return vidToScannedVenueCaseCv2.get(venueId);
+                        }
+                        break;
                 }
             }
+
             return null;
         }
 
@@ -357,6 +408,10 @@ public class BlankFragment extends Fragment {
 
     private void showToast(String toastString) {
         Toast.makeText(getActivity().getApplicationContext(), toastString, Toast.LENGTH_SHORT).show();
+    }
+
+    public void acceleratorTrigger(String venueName) {
+
     }
 
     private List<ScanResult> scans = new LinkedList<ScanResult>();

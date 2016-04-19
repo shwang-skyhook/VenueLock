@@ -10,3 +10,17 @@
 venue_mac.csv
 
 venuelock-25-02-2016-13:02:29.txt
+
+app/src/main/assets/databases/venue_mac_boston.sqlite.db
+
+*.db
+
+*.db
+
+app/src/main/assets/databases/venue_mac_boston.sqlite.db
+
+app/src/main/venue_mac_boston.sqlite.db
+
+macCapsRemoveSpecials.py
+
+app/src/main/venue_mac_boston.sqlite.db

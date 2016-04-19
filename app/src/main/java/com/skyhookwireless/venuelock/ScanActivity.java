@@ -74,6 +74,7 @@ public class ScanActivity extends AppCompatActivity
 
     @Override
     public void stopScanning() {
+        fetchNearbyMonitoredVenues();
         blankFragment.stopScanning();
 
         new AlertDialog.Builder(this)
@@ -101,6 +102,7 @@ public class ScanActivity extends AppCompatActivity
 
     @Override
     public void startScanning() {
+        accelerator.startMonitoringForAllCampaigns(this);
         fetchNearbyMonitoredVenues();
         blankFragment.startScanning();
     }
@@ -112,7 +114,7 @@ public class ScanActivity extends AppCompatActivity
 
 
     public void fetchNearbyMonitoredVenues() {
-        accelerator.fetchNearbyMonitoredVenues(25, new AcceleratorClient.NearbyMonitoredVenuesListener() {
+        accelerator.fetchNearbyMonitoredVenues(40, new AcceleratorClient.NearbyMonitoredVenuesListener() {
             @Override
             public void onNearbyMonitoredVenuesFetched(List<NearbyCampaignVenue> venues) {
                 // Fetch venue information for nearby venues
@@ -132,6 +134,8 @@ public class ScanActivity extends AppCompatActivity
                     @Override
                     public void onVenueInfoError(int errorCode) {
                         // handle fetch venue info error...
+                        Integer n = 0;
+
                     }
                 });
             }
@@ -247,12 +251,10 @@ public class ScanActivity extends AppCompatActivity
         Intent intent = new Intent(this, AcceleratorIntentService.class);
         PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         accelerator.registerForCampaignMonitoring(pendingIntent, this);
-
     }
 
     @Override
     public void onDisconnected() {
-
     }
 
     @Override
@@ -262,8 +264,8 @@ public class ScanActivity extends AppCompatActivity
 
     @Override
     public void onRegisterForCampaignMonitoringResult(int i, PendingIntent pendingIntent) {
-        accelerator.stopMonitoringForAllCampaigns(this);
-        accelerator.startMonitoringForAllCampaigns(this);
+        //accelerator.stopMonitoringForAllCampaigns(this);
+        //accelerator.startMonitoringForAllCampaigns(this);
     }
 
     /**
@@ -357,6 +359,7 @@ public class ScanActivity extends AppCompatActivity
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // permission was granted, yay! Do the
                     // contacts-related task you need to do.
+                    accelerator.startMonitoringForAllCampaigns(this);
 
                 } else {
 
@@ -365,8 +368,6 @@ public class ScanActivity extends AppCompatActivity
                 }
                 return;
             }
-
-
             // other 'case' lines to check for other
             // permissions this app might request
         }
@@ -431,4 +432,5 @@ public class ScanActivity extends AppCompatActivity
     private BlankFragment blankFragment;
     private AcceleratorClient accelerator;
     private String fileName;
+    private Boolean mLocationPermissions;
 }
