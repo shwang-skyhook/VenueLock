@@ -50,22 +50,7 @@ import okhttp3.Response;
 
 public class ScanActivity extends AppCompatActivity
         implements BlankFragment.onVenueTriggeredListener,
-        ScanFragment.onScanDataReceivedListener,
-        AcceleratorClient.OnConnectionFailedListener,
-        AcceleratorClient.ConnectionCallbacks,
-        AcceleratorClient.OnRegisterForCampaignMonitoringResultListener,
-        AcceleratorClient.OnStopCampaignMonitoringResultListener,
-        AcceleratorClient.OnStartCampaignMonitoringResultListener{
-    @Override
-    public void onStopCampaignMonitoringResult(int i, String s) {
-
-    }
-
-    @Override
-    public void onStartCampaignMonitoringResult(int i, String s) {
-        boolean monitoringAll = accelerator.isMonitoringAllCampaigns();
-        fetchNearbyMonitoredVenues();
-    }
+        ScanFragment.onScanDataReceivedListener{
 
     @Override
     public void sendScanData(List<ScanResult> wifiList) {
@@ -74,7 +59,6 @@ public class ScanActivity extends AppCompatActivity
 
     @Override
     public void stopScanning() {
-        fetchNearbyMonitoredVenues();
         blankFragment.stopScanning();
 
         new AlertDialog.Builder(this)
@@ -102,8 +86,6 @@ public class ScanActivity extends AppCompatActivity
 
     @Override
     public void startScanning() {
-        accelerator.startMonitoringForAllCampaigns(this);
-        fetchNearbyMonitoredVenues();
         blankFragment.startScanning();
     }
 
@@ -114,39 +96,6 @@ public class ScanActivity extends AppCompatActivity
     }
 
 
-    public void fetchNearbyMonitoredVenues() {
-        accelerator.fetchNearbyMonitoredVenues(40, new AcceleratorClient.NearbyMonitoredVenuesListener() {
-            @Override
-            public void onNearbyMonitoredVenuesFetched(List<NearbyCampaignVenue> venues) {
-                // Fetch venue information for nearby venues
-                List<Long> ids = new ArrayList<Long>(venues.size());
-                for (NearbyCampaignVenue venue : venues) {
-                    ids.add(venue.venueId);
-                }
-                accelerator.fetchVenueInfo(ids, new AcceleratorClient.VenueInfoListener() {
-                    @Override
-                    public void onVenueInfoFetched(List<VenueInfo> venues) {
-                        // handle venue information...
-                        for (VenueInfo venueInfo: venues) {
-                            LatLng position = new LatLng(venueInfo.latitude, venueInfo.longitude);
-                            venueMapFragment.plotNearbyVenue(position, venueInfo.name, venueInfo.venueId);
-                        }
-                    }
-                    @Override
-                    public void onVenueInfoError(int errorCode) {
-                        // handle fetch venue info error...
-                        Integer n = 0;
-
-                    }
-                });
-            }
-            @Override
-            public void onNearbyMonitoredVenuesError(int errorCode) {
-                // handle fetch venue info error...
-                Integer n = 0;
-            }
-        });
-    }
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
      * fragments for each of the sections. We use a
@@ -196,8 +145,6 @@ public class ScanActivity extends AppCompatActivity
             }
         });
 
-        accelerator = new AcceleratorClient(this, ALEX_KEY, this, this);
-        accelerator.connect();
 
     }
 
@@ -230,9 +177,6 @@ public class ScanActivity extends AppCompatActivity
             venueMapFragment.clearMarkers();
             return true;
         }
-        else if (id == R.id.refresh_accelerator_venues) {
-            fetchNearbyMonitoredVenues();
-        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -241,47 +185,14 @@ public class ScanActivity extends AppCompatActivity
      * A placeholder fragment containing a simple view.
      */
 
-    @Override
-    protected void onDestroy() {
-        if (accelerator != null) {accelerator.disconnect();
-        }
-        super.onDestroy();
-    }
 
     public void onFragmentInteraction(Uri uri) {
-    }
-
-    @Override
-    public void onConnected() {
-
-        Intent intent = new Intent(this, AcceleratorIntentService.class);
-        PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        accelerator.registerForCampaignMonitoring(pendingIntent, this);
-    }
-
-    @Override
-    public void onDisconnected() {
-    }
-
-    @Override
-    public void onConnectionFailed(int i) {
-
-    }
-
-    @Override
-    public void onRegisterForCampaignMonitoringResult(int i, PendingIntent pendingIntent) {
-        //accelerator.stopMonitoringForAllCampaigns(this);
-        //accelerator.startMonitoringForAllCampaigns(this);
     }
 
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
      * one of the sections/tabs/pages.
      */
-
-    private final static String ACCELERATOR_KEY = "eJwVwUEKACAIBMBzjxHUUttjYH4q-ns0I034GxBvJ7GtZyzyzUozTKl6gHQ4Yi6rBN8HEUsLFA";
-    private final static String ALEX_KEY = "eJwVwUsOABAMBcC1wzShXj-WRHspcXcx00qrXx-QclTgcy0hjhRyqBMjJyXUNodZDb8PEdQLLQ";
-    private final static String DEMO_KEY = "eJwVwUEKwDAIBMBzHiPoIqx7bIN-quTvoTOxwn8gc32YDb1NE1TmObDsHuNDYErh2ucCEtsLLA";
 
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
@@ -365,7 +276,6 @@ public class ScanActivity extends AppCompatActivity
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // permission was granted, yay! Do the
                     // contacts-related task you need to do.
-                    accelerator.startMonitoringForAllCampaigns(this);
 
                 } else {
 
@@ -436,7 +346,6 @@ public class ScanActivity extends AppCompatActivity
     private ScanFragment scanFragment;
     private VenueMapFragment venueMapFragment;
     private BlankFragment blankFragment;
-    private AcceleratorClient accelerator;
     private String fileName;
     private Boolean mLocationPermissions;
 }

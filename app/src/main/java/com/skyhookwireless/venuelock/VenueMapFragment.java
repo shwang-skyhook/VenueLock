@@ -181,13 +181,6 @@ public class VenueMapFragment extends Fragment implements OnMapReadyCallback, Go
                 .icon(getMarkerIcon("#FF7043")));
     }
 
-    public void plotNearbyVenue(LatLng latlng, String name, Long id) {
-        Marker myMarker = googleMap.addMarker(new MarkerOptions()
-                .position(latlng)
-                .title(name)
-                .snippet(id.toString())
-                .icon(getMarkerIcon("#303F9F")));
-    }
 
     public BitmapDescriptor getMarkerIcon(String color) {
         float[] hsv = new float[3];
