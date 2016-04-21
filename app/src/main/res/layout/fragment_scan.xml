@@ -2,20 +2,20 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/scrollView"
     android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="fill_parent"
     android:scrollIndicators="right"
     android:fillViewport="true">
 
     <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
         android:orientation="vertical"
         android:paddingBottom="@dimen/activity_vertical_margin"
         android:paddingLeft="@dimen/activity_horizontal_margin"
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingTop="@dimen/activity_vertical_margin"
-        android:focusableInTouchMode="true"
-        tools:context="com.skyhookwireless.venuelock.ScanFragment">
+        tools:context="com.skyhookwireless.venuelock.ScanFragment"
+        android:scrollIndicators="right">
 
         <EditText
             android:id="@+id/venueEditText"
@@ -54,8 +54,8 @@
             android:layout_height="wrap_content"
             android:onClick="onStopScanButtonClicked"
             android:text="Stop"
-            android:layout_below="@+id/userEditText"
-            android:layout_toEndOf="@+id/venueEditText" />
+            android:layout_below="@+id/venueEditText"
+            android:layout_alignEnd="@+id/outsideButton" />
 
         <Button
             android:id="@+id/outsideButton"
@@ -105,11 +105,20 @@
         <TextView
             android:id="@+id/scanTextView"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="300dp"
             android:layout_below="@+id/completelyInsideButton"
             android:layout_centerHorizontal="true"
             android:layout_gravity="fill"
             android:text="@string/hello_world" />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Mall"
+            android:id="@+id/checkBox"
+            android:layout_alignBottom="@+id/stopScanButton"
+            android:layout_alignEnd="@+id/userEditText"
+            android:layout_below="@+id/userEditText" />
 
     </RelativeLayout>
 </ScrollView>

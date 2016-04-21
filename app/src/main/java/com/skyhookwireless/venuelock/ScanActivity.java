@@ -109,6 +109,7 @@ public class ScanActivity extends AppCompatActivity
 
     @Override
     public void plotVenue(ScannedVenue scannedVenue) {
+        scanFragment.writeVenueLockTrigger(scannedVenue);
         venueMapFragment.plotTriggeredVenue(scannedVenue);
     }
 
@@ -186,10 +187,12 @@ public class ScanActivity extends AppCompatActivity
             @Override
             public void onClick(View view) {
                 if (venueMapFragment != null) {
-                    scanFragment.writeGroundTruth(venueMapFragment.getGroundTruth());
+                    String groundTruth = venueMapFragment.getGroundTruth();
+                    scanFragment.writeGroundTruth(groundTruth);
+                    Snackbar.make(view, "Ground Truth Set at " + groundTruth, Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
                 }
-                Snackbar.make(view, "Ground Truth Set", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+
             }
         });
 
@@ -226,6 +229,9 @@ public class ScanActivity extends AppCompatActivity
             blankFragment.clearTriggers();
             venueMapFragment.clearMarkers();
             return true;
+        }
+        else if (id == R.id.refresh_accelerator_venues) {
+            fetchNearbyMonitoredVenues();
         }
 
         return super.onOptionsItemSelected(item);

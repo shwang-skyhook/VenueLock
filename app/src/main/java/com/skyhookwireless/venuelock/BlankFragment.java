@@ -273,8 +273,10 @@ public class BlankFragment extends Fragment {
                                 secondHighest = current;
                             }
                         }
-                        if (venueId != "")
+                        if (venueId != ""){
+                            vidToScannedVenueCaseAv2.get(venueId).setTriggeringAlgorithm("A");
                             return vidToScannedVenueCaseAv2.get(venueId);
+                        }
                         break;
                 }
             }
@@ -303,6 +305,7 @@ public class BlankFragment extends Fragment {
                             }
                         }
                         if (highest >= secondHighest + 3) {
+                            vidToScannedVenueCaseBv2.get(venueId).setTriggeringAlgorithm("B");
                             return vidToScannedVenueCaseBv2.get(venueId);
                         }
                         break;
@@ -333,6 +336,7 @@ public class BlankFragment extends Fragment {
                             }
                         }
                         if (highest >= secondHighest + 4) {
+                            vidToScannedVenueCaseCv2.get(venueId).setTriggeringAlgorithm("C");
                             return vidToScannedVenueCaseCv2.get(venueId);
                         }
                         break;

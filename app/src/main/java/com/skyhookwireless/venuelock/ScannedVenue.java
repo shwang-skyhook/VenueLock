@@ -36,6 +36,17 @@ public class ScannedVenue {
         vLatLng = new LatLng(vlat,vlng);
     }
 
+    public void setTriggeringAlgorithm(String algorithm) {
+        triggeringAlgorithm = algorithm;
+    }
+
+    public String getTriggeringAlgorithm() {
+        if (triggeringAlgorithm != null) {
+            return triggeringAlgorithm;
+        }
+        return "No Triggering Algorithm";
+    }
+
     public LatLng getvLatLng() {
         return vLatLng;
     }
@@ -56,4 +67,5 @@ public class ScannedVenue {
     private String vName;
     private LatLng vLatLng;
     private Integer vCount;
+    private String triggeringAlgorithm;
 }

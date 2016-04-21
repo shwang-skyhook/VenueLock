@@ -30,6 +30,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -157,6 +158,7 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
         sensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
         senAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sensorManager.registerListener(this, senAccelerometer , SensorManager.SENSOR_DELAY_NORMAL);
+        mallCheckBox = (CheckBox) view.findViewById(R.id.checkBox);
 
     }
 
@@ -173,16 +175,23 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
                 stopScanButton.setEnabled(true);
                 venueEditText.setFocusable(false);
                 userEditText.setFocusable(false);
+
                 if (venueEditText.getText() != null && userEditText.getText() != null) {
                     if (venueEditText.getText().toString().isEmpty() && userEditText.getText().toString().isEmpty()) {
-                        filename = "venuelock-" + getDate()+ ".txt";
+                        if (mallCheckBox.isChecked())
+                            filename = "venuelock-" + getDate()+ "-mall.txt";
+                        else
+                            filename = "venuelock-" + getDate()+ ".txt";
                     }
                     else {
-                        filename = "venuelock-" + userEditText.getText().toString() + "-" + venueEditText.getText().toString() +"-" + getDate()+ ".txt";
+                        if (mallCheckBox.isChecked())
+                            filename = "venuelock-" + userEditText.getText().toString() + "-" + venueEditText.getText().toString() +"-" + getDate()+ "-mall.txt";
+                        else
+                            filename = "venuelock-" + userEditText.getText().toString() + "-" + venueEditText.getText().toString() +"-" + getDate()+ ".txt";
                     }
                 }
                 else {
-                    filename = "venuelock-" + getDate()+ ".txt";
+                    filename = "venuelock-" + getDate()+ "-mall.txt";
                 }
                 mHandler.postDelayed(mStatusChecker, interval);
                 scanDataReceivedListener.startScanning();
@@ -316,6 +325,13 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
         scanSB.append("Ground Truth Set: "+ groundTruth + "\n");
     }
 
+    public void writeVenueLockTrigger(ScannedVenue venue) {
+        scanSB.append("VenueLock Trigger VID: " + venue.getVID()
+                        + " " + venue.getvLatLng().toString()
+                        + " Venue Name: " + venue.getName()
+                        + " Triggering Algorithm: " + venue.getTriggeringAlgorithm() + "\n");
+    }
+
     private void showToast(String toastString) {
         Toast.makeText(getActivity().getApplicationContext(), toastString, Toast.LENGTH_SHORT).show();
     }
@@ -350,6 +366,7 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
     private Handler mHandler;
     private int numScans = 0;
     private Button startScanButton, stopScanButton;
+    private CheckBox mallCheckBox;
     private EditText venueEditText;
     private EditText userEditText;
     TextView scanTextView;
