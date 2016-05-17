@@ -425,7 +425,7 @@ public class ScanActivity extends AppCompatActivity
                 if (r.code() != 200) {
                     scanFragment.scanTextView.setText("Error when syncing\n Response code: " + r.code() + "\nCould not sync file");
                 } else {
-                    scanFragment.scanTextView.setText(fileName + "\n synced");
+                    scanFragment.scanTextView.setText(fileName + "\n Succesfully synced");
                 }
             } else {
                 scanFragment.scanTextView.setText("Error when syncing\nCould not sync file\nNo response");

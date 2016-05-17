@@ -23,12 +23,10 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.telephony.CellInfo;
 import android.telephony.TelephonyManager;
-import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -71,7 +69,7 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
     @Override
     public void onResume() {
         super.onResume();
-        sensorManager.registerListener(this, senAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this, sensorBarometer, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     @Override
@@ -97,6 +95,9 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
                 last_y = y;
                 last_z = z;
             }
+        }
+        else if (mySensor.getType() == Sensor.TYPE_PRESSURE) {
+            lastPressure = event.values[0];
         }
     }
 
@@ -156,8 +157,8 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
         btManager = (BluetoothManager) getActivity().getSystemService(Context.BLUETOOTH_SERVICE);
         btAdapter = btManager.getAdapter();
         sensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
-        senAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        sensorManager.registerListener(this, senAccelerometer , SensorManager.SENSOR_DELAY_NORMAL);
+        sensorBarometer = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
+        sensorManager.registerListener(this, sensorBarometer , SensorManager.SENSOR_DELAY_NORMAL);
         mallCheckBox = (CheckBox) view.findViewById(R.id.checkBox);
 
     }
@@ -252,6 +253,11 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
                     + proximity + ", "
                     + cellScan.toString() + "\n");
         }
+
+        scanSB.append(filename + ", Scan "
+                + new Integer(numScans+1).toString() + ", "
+                + "Atmospheric Pressure in hPA:" +
+                + lastPressure + "\n");
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             if (ContextCompat.checkSelfPermission(getActivity() ,Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -376,9 +382,10 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
     private BluetoothAdapter btAdapter;
     private BluetoothLeScanner btleScanner;
     ScanCallback mScanCallback;
+    private float lastPressure;
 
     private SensorManager sensorManager;
-    private Sensor senAccelerometer;
+    private Sensor sensorBarometer;
     onScanDataReceivedListener scanDataReceivedListener;
 
     private long lastUpdate = 0;
