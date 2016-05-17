@@ -99,6 +99,11 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
         else if (mySensor.getType() == Sensor.TYPE_PRESSURE) {
             lastPressure = event.values[0];
         }
+        else if (mySensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
+            magnetx = event.values[0];
+            magnety = event.values[1];
+            magnetz = event.values[2];
+        }
     }
 
     @Override
@@ -158,7 +163,9 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
         btAdapter = btManager.getAdapter();
         sensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
         sensorBarometer = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
+        sensorMagnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         sensorManager.registerListener(this, sensorBarometer , SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this, sensorMagnetometer , SensorManager.SENSOR_DELAY_NORMAL);
         mallCheckBox = (CheckBox) view.findViewById(R.id.checkBox);
 
     }
@@ -256,8 +263,13 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
 
         scanSB.append(filename + ", Scan "
                 + new Integer(numScans+1).toString() + ", "
-                + "Atmospheric Pressure in hPA:" +
+                + "Atmospheric Pressure in hPA: " +
                 + lastPressure + "\n");
+
+        scanSB.append(filename + ", Scan "
+                + new Integer(numScans+1).toString() + ", "
+                + "Magnetometer Data x, y, z " +
+                + magnetx + ", " + magnety + ", " + magnetz + "\n");
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             if (ContextCompat.checkSelfPermission(getActivity() ,Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -382,10 +394,11 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
     private BluetoothAdapter btAdapter;
     private BluetoothLeScanner btleScanner;
     ScanCallback mScanCallback;
-    private float lastPressure;
+    private float lastPressure, magnetx, magnety, magnetz;
 
     private SensorManager sensorManager;
     private Sensor sensorBarometer;
+    private Sensor sensorMagnetometer;
     onScanDataReceivedListener scanDataReceivedListener;
 
     private long lastUpdate = 0;
