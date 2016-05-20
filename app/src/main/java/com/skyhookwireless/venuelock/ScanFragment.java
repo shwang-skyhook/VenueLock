@@ -36,7 +36,10 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -77,6 +80,8 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
         Sensor mySensor = event.sensor;
 
         if (mySensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            List<Float> eventList = Arrays.asList(event.values[1], event.values[1], event.values[2]);
+            accelData.add(eventList);
             float x = event.values[0];
             float y = event.values[1];
             float z = event.values[2];
@@ -97,12 +102,25 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
             }
         }
         else if (mySensor.getType() == Sensor.TYPE_PRESSURE) {
-            lastPressure = event.values[0];
+            //lastPressure = event.values[0];
+            pressureData.add(event.values[0]);
         }
         else if (mySensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
-            magnetx = event.values[0];
-            magnety = event.values[1];
-            magnetz = event.values[2];
+            List<Float> eventList = Arrays.asList(event.values[1], event.values[1], event.values[2]);
+            magData.add(eventList);
+        }
+        else if (mySensor.getType() == Sensor.TYPE_GRAVITY) {
+            List<Float> eventList = Arrays.asList(event.values[1], event.values[1], event.values[2]);
+
+            gravData.add(eventList);
+        }
+        else if (mySensor.getType() == Sensor.TYPE_GYROSCOPE) {
+            List<Float> eventList = Arrays.asList(event.values[1], event.values[1], event.values[2]);
+
+            gyroData.add(eventList);
+        }
+        else if (mySensor.getType() == Sensor.TYPE_LIGHT) {
+            lightData.add(event.values[0]);
         }
     }
 
@@ -151,21 +169,35 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         mHandler = new Handler();
-//        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-//
-//        if(imm != null){
-//            imm.toggleSoftInput(0, InputMethodManager.HIDE_IMPLICIT_ONLY);
-//        }
+
         scanTextView = (TextView) getActivity().findViewById(R.id.scanTextView);
         wifiManager = (WifiManager) getActivity().getSystemService(Context.WIFI_SERVICE);
         cellManager = (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
         btManager = (BluetoothManager) getActivity().getSystemService(Context.BLUETOOTH_SERVICE);
         btAdapter = btManager.getAdapter();
         sensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
+
         sensorBarometer = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
         sensorMagnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-        sensorManager.registerListener(this, sensorBarometer , SensorManager.SENSOR_DELAY_NORMAL);
-        sensorManager.registerListener(this, sensorMagnetometer , SensorManager.SENSOR_DELAY_NORMAL);
+        sensorLight = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+        sensorGyro = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+        sensorAccel = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        sensorGrav = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
+
+        sensorManager.registerListener(this, sensorBarometer , 100000); // Delay between samples is 100,000 microseconds. 10 samples per second
+        sensorManager.registerListener(this, sensorMagnetometer , 100000);
+        sensorManager.registerListener(this, sensorLight , 100000);
+        sensorManager.registerListener(this, sensorGyro , 100000);
+        sensorManager.registerListener(this, sensorAccel , 100000);
+        sensorManager.registerListener(this, sensorGrav , 100000);
+
+        this.pressureData = new ArrayList<Float>();
+        this.lightData = new ArrayList<Float>();
+        this.magData = new ArrayList<List<Float>>();
+        this.accelData = new ArrayList<List<Float>>();
+        this.gyroData = new ArrayList<List<Float>>();
+        this.gravData = new ArrayList<List<Float>>();
+
         mallCheckBox = (CheckBox) view.findViewById(R.id.checkBox);
 
     }
@@ -205,6 +237,7 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
                 scanDataReceivedListener.startScanning();
                 break;
             case R.id.stopScanButton:
+                AppendSensorData();
                 scanSB.setLength(0);
                 venueEditText.setFocusableInTouchMode(true);
                 venueEditText.setFocusable(true);
@@ -261,16 +294,6 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
                     + cellScan.toString() + "\n");
         }
 
-        scanSB.append(filename + ", Scan "
-                + new Integer(numScans+1).toString() + ", "
-                + "Atmospheric Pressure in hPA: " +
-                + lastPressure + "\n");
-
-        scanSB.append(filename + ", Scan "
-                + new Integer(numScans+1).toString() + ", "
-                + "Magnetometer Data x, y, z " +
-                + magnetx + ", " + magnety + ", " + magnetz + "\n");
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             if (ContextCompat.checkSelfPermission(getActivity() ,Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 mScanCallback = new ScanCallback() {
@@ -293,8 +316,6 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
                 btleScanner.startScan(mScanCallback);
             }
         }
-
-
 
         if (isExternalStorageWritable())
         {
@@ -359,6 +380,61 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
         return filename;
     }
 
+    private void AppendSensorData() {
+
+        scanSB.append(filename + ", Samples: "
+                + pressureData.size() + ", "
+                + "Atmospheric Pressure in hPA: "
+                + pressureData.toString() + "\n");
+        pressureData.clear();
+
+        scanSB.append(filename + ", Samples: "
+                + lightData.size() + ", "
+                + "Ambient light level in SI lux units: "
+                + lightData.toString() + "\n");
+        lightData.clear();
+
+        scanSB.append(filename + ", Samples: "
+                + gravData.size() + ", "
+                + "Gravity data in m/s^2: "
+                + gravData.toString() + "\n");
+        gravData.clear();
+
+        scanSB.append(filename + ", Samples: "
+                + magData.size() + ", "
+                + "Magnet data in micro-Tesla: "
+                + magData.toString() + "\n");
+        magData.clear();
+
+        scanSB.append(filename + ", Samples: "
+                + accelData.size() + ", "
+                + "Accelerator data in m/s^2: "
+                + accelData.toString() + "\n");
+        accelData.clear();
+
+        scanSB.append(filename + ", Samples: "
+                + gyroData.size() + ", "
+                + "Gyroscope data in radians/second: "
+                + gyroData.toString() + "\n");
+        gyroData.clear();
+
+        scanSB.append(filename + "Ended at: "
+                + getDate() + "\n");
+
+        try {
+            file = new File(Environment.getExternalStorageDirectory(), filename);
+            outputstream = new FileOutputStream(file);
+            outputstream.write(scanSB.toString().getBytes());
+            outputstream.close();
+        }
+        catch (IOException e) {
+            Log.e("Exception", "File write failed: " + e.toString());
+            showToast("Exception, File write failed: " + e.toString());
+        }
+
+
+    }
+
     // Device scan callback.
     private BluetoothAdapter.LeScanCallback mLeScanCallback =
             new BluetoothAdapter.LeScanCallback() {
@@ -395,10 +471,11 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
     private BluetoothLeScanner btleScanner;
     ScanCallback mScanCallback;
     private float lastPressure, magnetx, magnety, magnetz;
+    private List<Float> pressureData, lightData;
+    private List<List<Float>> magData, accelData, gyroData, gravData;
 
     private SensorManager sensorManager;
-    private Sensor sensorBarometer;
-    private Sensor sensorMagnetometer;
+    private Sensor sensorBarometer, sensorMagnetometer, sensorLight, sensorAccel, sensorGyro, sensorGrav;
     onScanDataReceivedListener scanDataReceivedListener;
 
     private long lastUpdate = 0;
