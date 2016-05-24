@@ -357,7 +357,7 @@ public class BlankFragment extends Fragment {
                         showToast("Triggered venue: " + scannedVenue.getName());
                         venueTriggeredListener.plotVenue(scannedVenue);
                     }
-                    strings.add(scannedVenue.getName() + " " +getDate());
+                    strings.add(scannedVenue.getName() + ": " + scannedVenue.getTriggeringAlgorithm() + " at: " +getDate());
                 }
                 stringAdapter.notifyDataSetChanged();
             }
@@ -424,7 +424,7 @@ public class BlankFragment extends Fragment {
     private ArrayAdapter<String> stringAdapter;
     private DataBaseHelper myDbHelper;
     private Handler mHandler;
-    private int interval = 8000;
+    private int interval = 7000;
     private ListView lv;
     private Integer parseCount;
     private NotificationCompat.Builder mBuilder;

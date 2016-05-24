@@ -16,6 +16,7 @@ public class ScannedVenue {
     public ScannedVenue(String name) {
         vName = name;
         vCount = 1;
+        triggeringAlgorithm = "None";
     }
 
     public void IncrementCount() {
