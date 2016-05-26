@@ -80,42 +80,24 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
         Sensor mySensor = event.sensor;
 
         if (mySensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-            List<Float> eventList = Arrays.asList(event.values[1], event.values[1], event.values[2]);
+            List<Float> eventList = Arrays.asList(event.values[0], event.values[1], event.values[2]);
             accelData.add(eventList);
-            float x = event.values[0];
-            float y = event.values[1];
-            float z = event.values[2];
-            long curTime = System.currentTimeMillis();
-
-            if ((curTime - lastUpdate) > 100) {
-                long diffTime = (curTime - lastUpdate);
-                lastUpdate = curTime;
-
-                float speed = Math.abs(x + y + z - last_x - last_y - last_z)/ diffTime * 10000;
-
-                if (speed > SHAKE_THRESHOLD) {
-                }
-
-                last_x = x;
-                last_y = y;
-                last_z = z;
-            }
         }
         else if (mySensor.getType() == Sensor.TYPE_PRESSURE) {
             //lastPressure = event.values[0];
             pressureData.add(event.values[0]);
         }
         else if (mySensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
-            List<Float> eventList = Arrays.asList(event.values[1], event.values[1], event.values[2]);
+            List<Float> eventList = Arrays.asList(event.values[0], event.values[1], event.values[2]);
             magData.add(eventList);
         }
         else if (mySensor.getType() == Sensor.TYPE_GRAVITY) {
-            List<Float> eventList = Arrays.asList(event.values[1], event.values[1], event.values[2]);
+            List<Float> eventList = Arrays.asList(event.values[0], event.values[1], event.values[2]);
 
             gravData.add(eventList);
         }
         else if (mySensor.getType() == Sensor.TYPE_GYROSCOPE) {
-            List<Float> eventList = Arrays.asList(event.values[1], event.values[1], event.values[2]);
+            List<Float> eventList = Arrays.asList(event.values[0], event.values[1], event.values[2]);
 
             gyroData.add(eventList);
         }
