@@ -21,7 +21,7 @@ public class DataBaseHelper extends SQLiteOpenHelper
 {
     private SQLiteDatabase myDataBase;
     private final Context myContext;
-    private static final String DATABASE_NAME = "venue_mac_short.sqlite.db";
+    private static final String DATABASE_NAME = "venue_mac_philly.sqlite.db";
     public final static String DATABASE_PATH ="/data/data/com.skyhookwireless.venuelock/databases/";
     public static final int DATABASE_VERSION = 1;
     //public static final int DATABASE_VERSION_old = 1;
@@ -145,7 +145,7 @@ public class DataBaseHelper extends SQLiteOpenHelper
     public String getVidForMac(String mac) {
         String s = "";
         try {
-            String getVidQuery = "select vid from venue_mac_short where _id=\"" + mac + "\"" ;
+            String getVidQuery = "select vid from venue_mac_philly where _id=\"" + mac + "\"" ;
             SQLiteDatabase db = this.getReadableDatabase();
             Cursor cursor = db.rawQuery(getVidQuery, null);
             cursor.moveToFirst();
@@ -165,7 +165,7 @@ public class DataBaseHelper extends SQLiteOpenHelper
 
     public ScannedVenue getScannedVenue(String mac) {
         try {
-            String getVidQuery = "select vid, vname, vlatitude, vlongitude from venue_mac_short where _id=\"" + mac + "\"" ;
+            String getVidQuery = "select vid, vname, vlatitude, vlongitude from venue_mac_philly where _id=\"" + mac + "\"" ;
             SQLiteDatabase db = this.getReadableDatabase();
             Cursor cursor = db.rawQuery(getVidQuery, null);
             String s = "";
