@@ -219,7 +219,6 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
                 scanDataReceivedListener.startScanning();
                 break;
             case R.id.stopScanButton:
-                AppendSensorData();
                 scanSB.setLength(0);
                 venueEditText.setFocusableInTouchMode(true);
                 venueEditText.setFocusable(true);
@@ -298,6 +297,8 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
                 btleScanner.startScan(mScanCallback);
             }
         }
+
+        AppendSensorData();
 
         if (isExternalStorageWritable())
         {
@@ -400,7 +401,7 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
                 + gyroData.toString() + "\n");
         gyroData.clear();
 
-        scanSB.append(filename + "Ended at: "
+        scanSB.append(filename + " Scan ended at: "
                 + getDate() + "\n");
 
         try {
