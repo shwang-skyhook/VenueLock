@@ -84,7 +84,6 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
             accelData.add(eventList);
         }
         else if (mySensor.getType() == Sensor.TYPE_PRESSURE) {
-            //lastPressure = event.values[0];
             pressureData.add(event.values[0]);
         }
         else if (mySensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
@@ -104,6 +103,13 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
         else if (mySensor.getType() == Sensor.TYPE_LIGHT) {
             lightData.add(event.values[0]);
         }
+        else if (mySensor.getType() == Sensor.TYPE_RELATIVE_HUMIDITY) {
+            humidityData.add(event.values[0]);
+        }
+        else if (mySensor.getType() == Sensor.TYPE_AMBIENT_TEMPERATURE) {
+            temperatureData.add(event.values[0]);
+        }
+
     }
 
     @Override
@@ -165,6 +171,8 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
         sensorGyro = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         sensorAccel = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sensorGrav = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
+        sensorHumid = sensorManager.getDefaultSensor(Sensor.TYPE_RELATIVE_HUMIDITY);
+        sensorTemp = sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE);
 
         sensorManager.registerListener(this, sensorBarometer , 100000); // Delay between samples is 100,000 microseconds. 10 samples per second
         sensorManager.registerListener(this, sensorMagnetometer , 100000);
@@ -172,6 +180,8 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
         sensorManager.registerListener(this, sensorGyro , 100000);
         sensorManager.registerListener(this, sensorAccel , 100000);
         sensorManager.registerListener(this, sensorGrav , 100000);
+        sensorManager.registerListener(this, sensorHumid , 100000);
+        sensorManager.registerListener(this, sensorTemp , 100000);
 
         this.pressureData = new ArrayList<Float>();
         this.lightData = new ArrayList<Float>();
@@ -365,44 +375,53 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
 
     private void AppendSensorData() {
 
-        scanSB.append(filename + ", Samples: "
+        String date = getDate();
+
+        scanSB.append(filename + ", " + date + ", Samples: "
                 + pressureData.size() + ", "
                 + "Atmospheric Pressure in hPA: "
                 + pressureData.toString() + "\n");
         pressureData.clear();
 
-        scanSB.append(filename + ", Samples: "
+        scanSB.append(filename + ", " + date + ", Samples: "
                 + lightData.size() + ", "
                 + "Ambient light level in SI lux units: "
                 + lightData.toString() + "\n");
         lightData.clear();
 
-        scanSB.append(filename + ", Samples: "
+        scanSB.append(filename + ", " + date + ", Samples: "
                 + gravData.size() + ", "
                 + "Gravity data in m/s^2: "
                 + gravData.toString() + "\n");
         gravData.clear();
 
-        scanSB.append(filename + ", Samples: "
+        scanSB.append(filename + ", " + date + ", Samples: "
                 + magData.size() + ", "
                 + "Magnet data in micro-Tesla: "
                 + magData.toString() + "\n");
         magData.clear();
 
-        scanSB.append(filename + ", Samples: "
+        scanSB.append(filename + ", " + date + ", Samples: "
                 + accelData.size() + ", "
                 + "Accelerator data in m/s^2: "
                 + accelData.toString() + "\n");
         accelData.clear();
 
-        scanSB.append(filename + ", Samples: "
+        scanSB.append(filename + ", " + date + ", Samples: "
                 + gyroData.size() + ", "
                 + "Gyroscope data in radians/second: "
                 + gyroData.toString() + "\n");
         gyroData.clear();
 
-        scanSB.append(filename + " Scan ended at: "
-                + getDate() + "\n");
+        scanSB.append(filename + ", " + date + ", Samples: "
+                + humidityData.size() + ","
+                + "Humidity data in percentage: "
+                + humidityData.toString() + "\n");
+
+        scanSB.append(filename + ", " + date + ", Samples: "
+                + temperatureData.size() + ","
+                + "Temperature data in C: "
+                + temperatureData.toString() + "\n");
 
         try {
             file = new File(Environment.getExternalStorageDirectory(), filename);
@@ -454,11 +473,11 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
     private BluetoothLeScanner btleScanner;
     ScanCallback mScanCallback;
     private float lastPressure, magnetx, magnety, magnetz;
-    private List<Float> pressureData, lightData;
+    private List<Float> pressureData, lightData, humidityData, temperatureData;
     private List<List<Float>> magData, accelData, gyroData, gravData;
 
     private SensorManager sensorManager;
-    private Sensor sensorBarometer, sensorMagnetometer, sensorLight, sensorAccel, sensorGyro, sensorGrav;
+    private Sensor sensorBarometer, sensorMagnetometer, sensorLight, sensorAccel, sensorGyro, sensorGrav, sensorHumid, sensorTemp;
     onScanDataReceivedListener scanDataReceivedListener;
 
     private long lastUpdate = 0;
