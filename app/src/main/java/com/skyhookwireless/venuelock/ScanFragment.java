@@ -374,6 +374,7 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
     }
 
     private void AppendSensorData() {
+        Log.e("VenueLock ScanFragment", "Appending sensor data");
 
         String date = getDate();
 

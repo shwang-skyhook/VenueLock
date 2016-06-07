@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
 import android.support.v7.app.NotificationCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -195,6 +196,7 @@ public class BlankFragment extends Fragment {
             mHandler.postDelayed(mStatusChecker, interval);
         } catch (Exception e)
         {
+            Log.e("Venuelock Algorithm", e.getLocalizedMessage());
             e.printStackTrace();
         }
 
@@ -220,6 +222,8 @@ public class BlankFragment extends Fragment {
 
         protected ScannedVenue doInBackground(List<ScanResult>... wifiList) {
             // using this.mContext
+            Log.d("Venuelock Algorithm", "Starting background db query");
+
             initializeDB();
 
             if (currentScanTriggers.size()>15) {
@@ -367,15 +371,19 @@ public class BlankFragment extends Fragment {
     }
 
     private void initializeDB() {
+        Log.d("Venuelock Algorithm", "Initializing DB");
+
         myDbHelper = new DataBaseHelper(getActivity().getApplicationContext());
         try {
             myDbHelper.createDataBase();
         } catch (IOException ioe) {
+            Log.e("Venuelock Algorithm", ioe.getLocalizedMessage());
             throw new Error("Unable to create database");
         }
         try {
             myDbHelper.openDataBase();
         } catch (SQLException sqle) {
+            Log.e("Venuelock Algorithm", sqle.getLocalizedMessage());
             throw sqle;
         }
     }
