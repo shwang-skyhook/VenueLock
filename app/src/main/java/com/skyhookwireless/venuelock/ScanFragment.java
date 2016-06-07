@@ -189,6 +189,8 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
         this.accelData = new ArrayList<List<Float>>();
         this.gyroData = new ArrayList<List<Float>>();
         this.gravData = new ArrayList<List<Float>>();
+        this.humidityData = new ArrayList<Float>();
+        this.temperatureData = new ArrayList<Float>();
 
         mallCheckBox = (CheckBox) view.findViewById(R.id.checkBox);
 
@@ -374,7 +376,7 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
     }
 
     private void AppendSensorData() {
-        Log.e("VenueLock ScanFragment", "Appending sensor data");
+        Log.d("VenueLock ScanFragment", "Appending sensor data");
 
         String date = getDate();
 
@@ -418,11 +420,13 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
                 + humidityData.size() + ","
                 + "Humidity data in percentage: "
                 + humidityData.toString() + "\n");
+        humidityData.clear();
 
         scanSB.append(filename + ", " + date + ", Samples: "
                 + temperatureData.size() + ","
                 + "Temperature data in C: "
                 + temperatureData.toString() + "\n");
+        temperatureData.clear();
 
         try {
             file = new File(Environment.getExternalStorageDirectory(), filename);
