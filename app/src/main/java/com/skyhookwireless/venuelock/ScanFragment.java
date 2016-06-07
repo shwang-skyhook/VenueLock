@@ -270,6 +270,7 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
     public String getScans() {
         //scanSB.append("Scan number " + new Integer(numScans+1).toString() + " (" + proximity + "):\n");
 
+        Log.d("Venuelock Scanfragment","collecting wifi data");
         wifiList = wifiManager.getScanResults();
         scanDataReceivedListener.sendScanData(wifiList);
         for (ScanResult wifiScan : wifiList) {
@@ -279,6 +280,7 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
                     + wifiScan.toString()+"\n");
         }
 
+        Log.d("Venuelock Scanfragment","collecting cell data");
         cellList = cellManager.getAllCellInfo();
         for (CellInfo cellScan : cellList) {
             scanSB.append(filename + ", Scan "
@@ -301,6 +303,7 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
             }
         }
 
+        Log.d("Venuelock Scanfragment","collecting bluetooth data");
         if (btAdapter.getState() != BluetoothAdapter.STATE_ON) {
             btAdapter.enable(); }
         btleScanner = btAdapter.getBluetoothLeScanner();
@@ -310,7 +313,7 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
             }
         }
 
-        AppendSensorData();
+        AppendSensorData(numScans + 1);
 
         if (isExternalStorageWritable())
         {
@@ -375,54 +378,54 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
         return filename;
     }
 
-    private void AppendSensorData() {
+    private void AppendSensorData(Integer scanNumber) {
         Log.d("VenueLock ScanFragment", "Appending sensor data");
 
         String date = getDate();
 
-        scanSB.append(filename + ", " + date + ", Samples: "
+        scanSB.append(filename + ", " + date + ", Scan " + scanNumber + ", Samples: "
                 + pressureData.size() + ", "
                 + "Atmospheric Pressure in hPA: "
                 + pressureData.toString() + "\n");
         pressureData.clear();
 
-        scanSB.append(filename + ", " + date + ", Samples: "
+        scanSB.append(filename + ", " + date + ", Scan " + scanNumber + ", Samples: "
                 + lightData.size() + ", "
                 + "Ambient light level in SI lux units: "
                 + lightData.toString() + "\n");
         lightData.clear();
 
-        scanSB.append(filename + ", " + date + ", Samples: "
+        scanSB.append(filename + ", " + date + ", Scan " + scanNumber + ", Samples: "
                 + gravData.size() + ", "
                 + "Gravity data in m/s^2: "
                 + gravData.toString() + "\n");
         gravData.clear();
 
-        scanSB.append(filename + ", " + date + ", Samples: "
+        scanSB.append(filename + ", " + date + ", Scan " + scanNumber + ", Samples: "
                 + magData.size() + ", "
                 + "Magnet data in micro-Tesla: "
                 + magData.toString() + "\n");
         magData.clear();
 
-        scanSB.append(filename + ", " + date + ", Samples: "
+        scanSB.append(filename + ", " + date + ", Scan " + scanNumber + ", Samples: "
                 + accelData.size() + ", "
                 + "Accelerator data in m/s^2: "
                 + accelData.toString() + "\n");
         accelData.clear();
 
-        scanSB.append(filename + ", " + date + ", Samples: "
+        scanSB.append(filename + ", " + date + ", Scan " + scanNumber + ", Samples: "
                 + gyroData.size() + ", "
                 + "Gyroscope data in radians/second: "
                 + gyroData.toString() + "\n");
         gyroData.clear();
 
-        scanSB.append(filename + ", " + date + ", Samples: "
+        scanSB.append(filename + ", " + date + ", Scan " + scanNumber + ", Samples: "
                 + humidityData.size() + ","
                 + "Humidity data in percentage: "
                 + humidityData.toString() + "\n");
         humidityData.clear();
 
-        scanSB.append(filename + ", " + date + ", Samples: "
+        scanSB.append(filename + ", " + date + ", Scan " + scanNumber + ", Samples: "
                 + temperatureData.size() + ","
                 + "Temperature data in C: "
                 + temperatureData.toString() + "\n");
