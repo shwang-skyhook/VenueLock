@@ -346,7 +346,6 @@ public class BlankFragment extends Fragment {
                         break;
                 }
             }
-
             return null;
         }
 
