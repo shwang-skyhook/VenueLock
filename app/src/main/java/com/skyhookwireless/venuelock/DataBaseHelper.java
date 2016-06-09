@@ -130,7 +130,7 @@ public class DataBaseHelper extends SQLiteOpenHelper
     {
         if (newVersion > oldVersion)
         {
-            Log.v("VenueLock Database Upgrade", "Database version higher than old.");
+            Log.v("VenueLock Database", "Database version higher than old.");
             db_delete();
         }
     }
@@ -145,8 +145,8 @@ public class DataBaseHelper extends SQLiteOpenHelper
     public String getVidForMac(String mac) {
         String s = "";
         try {
+            Log.d("VenueLock Database", "getVidForMac");
             String getVidQuery = "select vid from venue_mac_short where _id=\"" + mac + "\"" ;
-            Log.d("VenueLock Database Helper", "getVidForMac");
             SQLiteDatabase db = this.getReadableDatabase();
             Cursor cursor = db.rawQuery(getVidQuery, null);
             cursor.moveToFirst();
@@ -166,8 +166,8 @@ public class DataBaseHelper extends SQLiteOpenHelper
 
     public ScannedVenue getScannedVenue(String mac) {
         try {
+            Log.d("VenueLock Database", "getScannedVenue");
             String getVidQuery = "select vid, vname, vlatitude, vlongitude from venue_mac_short where _id=\"" + mac + "\"" ;
-            Log.d("VenueLock Database Helper", "getScannedVenue");
             SQLiteDatabase db = this.getReadableDatabase();
             Cursor cursor = db.rawQuery(getVidQuery, null);
             String s = "";

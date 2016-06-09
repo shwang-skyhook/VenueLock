@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -43,7 +44,6 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-
 
 /**
  * Created by steveh on 12/15/15.
@@ -162,9 +162,24 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
         wifiManager = (WifiManager) getActivity().getSystemService(Context.WIFI_SERVICE);
         cellManager = (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
         btManager = (BluetoothManager) getActivity().getSystemService(Context.BLUETOOTH_SERVICE);
-        btAdapter = btManager.getAdapter();
-        sensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
+        btAdapter = BluetoothAdapter.getDefaultAdapter();
+        this.bleDevices = new ArrayList<String>();
+        if (btAdapter != null) {    // make sure device supports bluetooth
+            if (!btAdapter.isEnabled()) { // if bluetooth is disabled, turn on
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBtIntent, 1);
+            }
+            btleScanner = btAdapter.getBluetoothLeScanner();
+            mScanCallback = new ScanCallback() {
+                @Override
+                public void onScanResult(int callbackType, android.bluetooth.le.ScanResult result) {
+                    super.onScanResult(callbackType, result);
+                    bleDevices.add(result.toString());
+                }
+            };
+        }
 
+        sensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
         sensorBarometer = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
         sensorMagnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         sensorLight = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
@@ -227,8 +242,10 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
                 else {
                     filename = "venuelock-" + getDate()+ "-mall.txt";
                 }
+                clearScanCaches();
                 mHandler.postDelayed(mStatusChecker, interval);
                 scanDataReceivedListener.startScanning();
+                btleScanner.startScan(mScanCallback);
                 break;
             case R.id.stopScanButton:
                 scanSB.setLength(0);
@@ -236,13 +253,13 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
                 venueEditText.setFocusable(true);
                 userEditText.setFocusableInTouchMode(true);
                 userEditText.setFocusable(true);
-
                 startScanButton.setEnabled(true);
                 stopScanButton.setEnabled(false);
                 mHandler.removeCallbacks(mStatusChecker);
                 scanDataReceivedListener.stopScanning();
                 scanTextView.setText("Scan Finished with " + numScans + " scans.\n\n ");
                 numScans = 0;
+                btleScanner.stopScan(mScanCallback);
                 break;
             case R.id.outsideButton:
                 proximity = "Outside";
@@ -289,29 +306,14 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
                     + cellScan.toString() + "\n");
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            if (ContextCompat.checkSelfPermission(getActivity() ,Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                mScanCallback = new ScanCallback() {
-                    @Override
-                    public void onScanResult(int callbackType, android.bluetooth.le.ScanResult result) {
-                        super.onScanResult(callbackType, result);
-                        scanSB.append(filename + ", Scan "
-                                + new Integer(numScans+1).toString() + ", "
-                                + proximity + ", " + "Bluetooth: "
-                                + result.toString() + "\n");                    }
-                };
-            }
-        }
-
         Log.d("Venuelock Scanfragment","collecting bluetooth data");
-        if (btAdapter.getState() != BluetoothAdapter.STATE_ON) {
-            btAdapter.enable(); }
-        btleScanner = btAdapter.getBluetoothLeScanner();
-        if(ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION ) == PackageManager.PERMISSION_GRANTED) {
-            if (btleScanner != null) {
-                btleScanner.startScan(mScanCallback);
-            }
+        for (String device : bleDevices) {
+            scanSB.append(filename + ", Scan "
+                    + new Integer(numScans+1).toString() + ", "
+                    + proximity + ", Bluetooth device: "
+                    + device + "\n");
         }
+        bleDevices.clear();
 
         AppendSensorData(numScans + 1);
 
@@ -445,20 +447,20 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
 
     }
 
-    // Device scan callback.
-    private BluetoothAdapter.LeScanCallback mLeScanCallback =
-            new BluetoothAdapter.LeScanCallback() {
-                @Override
-                public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            //mLeDeviceListAdapter.addDevice(device);
-                            //mLeDeviceListAdapter.notifyDataSetChanged();
-                        }
-                    });
-                }
-            };
+    private void clearScanCaches() {
+        pressureData.clear();
+        lightData.clear();
+        humidityData.clear();
+        temperatureData.clear();
+        magData.clear();
+        accelData.clear();
+        gyroData.clear();
+        gravData.clear();
+        bleDevices.clear();
+        wifiList.clear();
+        cellList.clear();
+
+    }
 
     private File file;
     private FileOutputStream outputstream;
@@ -483,6 +485,7 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
     private float lastPressure, magnetx, magnety, magnetz;
     private List<Float> pressureData, lightData, humidityData, temperatureData;
     private List<List<Float>> magData, accelData, gyroData, gravData;
+    private List<String> bleDevices;
 
     private SensorManager sensorManager;
     private Sensor sensorBarometer, sensorMagnetometer, sensorLight, sensorAccel, sensorGyro, sensorGrav, sensorHumid, sensorTemp;
