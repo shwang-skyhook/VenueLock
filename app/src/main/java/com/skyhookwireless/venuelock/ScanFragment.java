@@ -457,9 +457,6 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
         gyroData.clear();
         gravData.clear();
         bleDevices.clear();
-        wifiList.clear();
-        cellList.clear();
-
     }
 
     private File file;
