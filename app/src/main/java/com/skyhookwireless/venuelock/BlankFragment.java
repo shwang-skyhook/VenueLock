@@ -114,11 +114,6 @@ public class BlankFragment extends Fragment {
         }
     }
 
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        mHandler = new Handler();
-    }
-
 
     @Override
     public void onAttach(Context context) {
@@ -164,7 +159,6 @@ public class BlankFragment extends Fragment {
     }
 
     public void clearTriggers() {
-        mHandler.removeCallbacks(mStatusChecker);
         currentScanTriggers.clear();
         strings.clear();
         stringAdapter.notifyDataSetChanged();
@@ -176,7 +170,6 @@ public class BlankFragment extends Fragment {
     public void stopScanning() {
         parseCount = 0;
         currentScanTriggers.clear();
-        mHandler.removeCallbacks(mStatusChecker);
         //myDbHelper.closeDataBase();
     }
 
@@ -189,17 +182,11 @@ public class BlankFragment extends Fragment {
     public void parseScan() {
         parseCount++;
         try {
-            if (parseCount > 10) {
-                mHandler.removeCallbacks(mStatusChecker);
-            }
-            new queryDB().execute(this.scans);
-            mHandler.postDelayed(mStatusChecker, interval);
         } catch (Exception e)
         {
             Log.e("Venuelock Algorithm", e.getLocalizedMessage());
             e.printStackTrace();
         }
-
     }
 
     //class queryDB extends AsyncTask<List<ScanResult>, Void, Map<String, Integer>> {
@@ -224,7 +211,6 @@ public class BlankFragment extends Fragment {
             // using this.mContext
             Log.d("Venuelock Algorithm", "Starting background db query");
 
-            initializeDB();
 
             if (currentScanTriggers.size()>15) {
                 currentScanTriggers.clear();
@@ -234,7 +220,6 @@ public class BlankFragment extends Fragment {
             HashMap<String, ScannedVenue> vidToScannedVenueCaseBv2 = new HashMap<>();
             HashMap<String, ScannedVenue> vidToScannedVenueCaseCv2 = new HashMap<>();
 
-            if (wifiList != null) {
                 for (ScanResult sr : wifiList[0]) {
                     if (sr.level > -80) {   //filter rssi < -80
                         String vid = myDbHelper.getVidForMac(sr.BSSID.replace(":", "").toUpperCase());  //remove ":" from mac
@@ -350,8 +335,6 @@ public class BlankFragment extends Fragment {
         }
 
         protected void onPostExecute(ScannedVenue scannedVenue) {
-            myDbHelper.closeDataBase();
-
             if (scannedVenue != null) {
                 if (!currentScanTriggers.contains(scannedVenue.getName())){
                     currentScanTriggers.add(scannedVenue.getName());
@@ -386,14 +369,6 @@ public class BlankFragment extends Fragment {
             throw sqle;
         }
     }
-
-    Runnable mStatusChecker = new Runnable() {
-        @Override
-        public void run() {
-            parseScan();
-            mHandler.postDelayed(mStatusChecker, interval);
-        }
-    };
 
     private String getDate() {
         Date date = Calendar.getInstance().getTime();
@@ -430,8 +405,6 @@ public class BlankFragment extends Fragment {
     private List<String> currentScanTriggers = new LinkedList<String>();
     private ArrayAdapter<String> stringAdapter;
     private DataBaseHelper myDbHelper;
-    private Handler mHandler;
-    private int interval = 7000;
     private ListView lv;
     private Integer parseCount;
     private NotificationCompat.Builder mBuilder;
