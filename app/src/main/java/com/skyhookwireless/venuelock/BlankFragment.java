@@ -10,31 +10,24 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.ListFragment;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 /**
@@ -54,6 +47,8 @@ public class BlankFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    private Timer timer;
+    private TimerTask doAsynchronousTask;
 
     private OnFragmentInteractionListener mListener;
 
@@ -163,13 +158,22 @@ public class BlankFragment extends Fragment {
     }
 
     public void stopScanning() {
+        myDbHelper.closeDataBase();
+
         parseCount = 0;
         currentScanTriggers.clear();
+
+        doAsynchronousTask.cancel();
+        timer.cancel();
         //myDbHelper.closeDataBase();
     }
 
     public void startScanning() {
         //initializeDB();
+        if (scans != null && scans.size() > 0) {
+            scans.clear();
+        }
+        initializeDB();
         parseCount = 0;
         parseScan();
     }
@@ -177,6 +181,27 @@ public class BlankFragment extends Fragment {
     public void parseScan() {
         parseCount++;
         try {
+            final Handler handler = new Handler();
+            timer = new Timer();
+            doAsynchronousTask = new TimerTask() {
+                @Override
+                public void run() {
+                    handler.post(new Runnable() {
+                        public void run() {
+                            try {
+                                queryDB querydb = new queryDB();
+                                // PerformBackgroundTask this class is the class that extends AsynchTask
+                                querydb.execute(scans);
+                            } catch (Exception e) {
+                                // TODO Auto-generated catch block
+                                Log.e("Venuelock Algorithm", e.getLocalizedMessage());
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                }
+            };
+            timer.schedule(doAsynchronousTask, 0, INTERVAL); //execute in every 50000 ms
         } catch (Exception e)
         {
             Log.e("Venuelock Algorithm", e.getLocalizedMessage());
@@ -184,7 +209,6 @@ public class BlankFragment extends Fragment {
         }
     }
 
-    //class queryDB extends AsyncTask<List<ScanResult>, Void, Map<String, Integer>> {
 
     class queryDB extends AsyncTask<List<ScanResult>, Void, ScannedVenue> {
 
@@ -215,6 +239,7 @@ public class BlankFragment extends Fragment {
             HashMap<String, ScannedVenue> vidToScannedVenueCaseBv2 = new HashMap<>();
             HashMap<String, ScannedVenue> vidToScannedVenueCaseCv2 = new HashMap<>();
 
+            if (wifiList != null && wifiList.length > 0) {
                 for (ScanResult sr : wifiList[0]) {
                     if (sr.level > -80) {   //filter rssi < -80
                         String vid = myDbHelper.getVidForMac(sr.BSSID.replace(":", "").toUpperCase());  //remove ":" from mac
@@ -403,6 +428,7 @@ public class BlankFragment extends Fragment {
     private ListView lv;
     private Integer parseCount;
     private NotificationCompat.Builder mBuilder;
+    private Integer INTERVAL = 5000;
     onVenueTriggeredListener venueTriggeredListener;
 
 }
