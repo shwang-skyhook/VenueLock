@@ -225,11 +225,6 @@ public class ScanActivity extends AppCompatActivity
             }
             return true;
         }
-        else if (id == R.id.action_clear_triggers) {
-            blankFragment.clearTriggers();
-            venueMapFragment.clearMarkers();
-            return true;
-        }
         else if (id == R.id.refresh_accelerator_venues) {
             fetchNearbyMonitoredVenues();
         }
