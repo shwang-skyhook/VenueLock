@@ -158,11 +158,6 @@ public class BlankFragment extends Fragment {
         void onFragmentInteraction(Uri uri);
     }
 
-    public void clearTriggers() {
-        currentScanTriggers.clear();
-        strings.clear();
-        stringAdapter.notifyDataSetChanged();
-    }
     public void setScanList(List<ScanResult> wifiList) {
         this.scans = wifiList;
     }

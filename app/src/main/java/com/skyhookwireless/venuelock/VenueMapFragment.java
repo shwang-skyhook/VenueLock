@@ -195,10 +195,6 @@ public class VenueMapFragment extends Fragment implements OnMapReadyCallback, Go
         return BitmapDescriptorFactory.defaultMarker(hsv[0]);
     }
 
-    public void clearMarkers() {
-        googleMap.clear();
-    }
-
     private String getDate() {
         Date date = Calendar.getInstance().getTime();
         SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy-HH:mm:ss");
