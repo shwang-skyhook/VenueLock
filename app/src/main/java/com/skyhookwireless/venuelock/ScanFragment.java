@@ -2,12 +2,14 @@ package com.skyhookwireless.venuelock;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
@@ -24,6 +26,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.telephony.CellInfo;
 import android.telephony.TelephonyManager;
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -443,8 +446,6 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
             Log.e("Exception", "File write failed: " + e.toString());
             showToast("Exception, File write failed: " + e.toString());
         }
-
-
     }
 
     private void clearScanCaches() {
@@ -458,6 +459,23 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
         gravData.clear();
         bleDevices.clear();
     }
+
+
+    public void AppendComments(String comments) {
+        scanSB.append(comments);
+        try {
+            file = new File(Environment.getExternalStorageDirectory(), filename);
+            outputstream = new FileOutputStream(file);
+            outputstream.write(scanSB.toString().getBytes());
+            outputstream.close();
+        }
+        catch (IOException e) {
+            Log.e("Exception", "File write failed: " + e.toString());
+            showToast("Exception, File write failed: " + e.toString());
+        }
+    }
+
+
 
     private File file;
     private FileOutputStream outputstream;
