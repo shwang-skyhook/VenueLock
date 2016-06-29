@@ -243,13 +243,15 @@ public class BlankFragment extends Fragment {
                 for (ScanResult sr : wifiList[0]) {
                     if (sr.level > -80) {   //filter rssi < -80
                         String vid = myDbHelper.getVidForMac(sr.BSSID.replace(":", "").toUpperCase());  //remove ":" from mac
-                        if (sr.level > -75) {
-                            if (sr.level > -65) {
-                                addToHashmap(sr, vidToScannedVenueCaseAv2, vid);
+                        if (vid != "") {
+                            if (sr.level > -75) {
+                                if (sr.level > -65) {
+                                    addToHashmap(sr, vidToScannedVenueCaseAv2, vid);
+                                }
+                                addToHashmap(sr, vidToScannedVenueCaseBv2, vid);
                             }
-                            addToHashmap(sr, vidToScannedVenueCaseBv2, vid);
+                            addToHashmap(sr, vidToScannedVenueCaseCv2, vid);
                         }
-                        addToHashmap(sr, vidToScannedVenueCaseCv2, vid);
                     }
                 }
             }
