@@ -21,7 +21,7 @@ public class DataBaseHelper extends SQLiteOpenHelper
 {
     private SQLiteDatabase myDataBase;
     private final Context myContext;
-    private static final String DATABASE_NAME = "venue_mac_philly.sqlite.db";
+    private static final String DATABASE_NAME = "venue_mac_phl.db";
     public final static String DATABASE_PATH ="/data/data/com.skyhookwireless.venuelock/databases/";
     public static final int DATABASE_VERSION = 1;
     //public static final int DATABASE_VERSION_old = 1;
