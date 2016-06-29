@@ -39,6 +39,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
@@ -462,14 +463,13 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
 
 
     public void AppendComments(String comments) {
-        scanSB.append(comments);
         try {
-            file = new File(Environment.getExternalStorageDirectory(), filename);
-            outputstream = new FileOutputStream(file);
-            outputstream.write(scanSB.toString().getBytes());
-            outputstream.close();
-        }
-        catch (IOException e) {
+            String filename = Environment.getExternalStorageDirectory()
+                    .getAbsolutePath() + "/" + getFileName();
+            FileWriter fw = new FileWriter(filename, true);
+            fw.write(comments + "\n\n");
+            fw.close();
+        } catch (IOException e) {
             Log.e("Exception", "File write failed: " + e.toString());
             showToast("Exception, File write failed: " + e.toString());
         }
