@@ -3,9 +3,11 @@ package com.skyhookwireless.venuelock;
 import android.Manifest;
 import android.app.Activity;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.net.wifi.ScanResult;
@@ -115,6 +117,11 @@ public class ScanActivity extends AppCompatActivity
                         scanFragment.AppendComments(input.getText().toString());
                     }
                 })
+                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing
+                    }
+                })
                 .setIcon(android.R.drawable.btn_plus)
                 .show();
 
@@ -166,6 +173,15 @@ public class ScanActivity extends AppCompatActivity
                 Integer n = 0;
             }
         });
+    }
+
+    public class ResponseReceiver extends BroadcastReceiver {
+        public static final String ACTION_RESP = "Message Processed";
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String vid = intent.getStringExtra(AcceleratorIntentService.VENUE_ID);
+        }
     }
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -272,6 +288,11 @@ public class ScanActivity extends AppCompatActivity
         Intent intent = new Intent(this, AcceleratorIntentService.class);
         PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         accelerator.registerForCampaignMonitoring(pendingIntent, this);
+
+        IntentFilter filter = new IntentFilter(ResponseReceiver.ACTION_RESP);
+        filter.addCategory(Intent.CATEGORY_DEFAULT);
+        receiver = new ResponseReceiver();
+        registerReceiver(receiver, filter);
     }
 
     @Override
@@ -454,4 +475,6 @@ public class ScanActivity extends AppCompatActivity
     private AcceleratorClient accelerator;
     private String fileName;
     private Boolean mLocationPermissions;
+    private ResponseReceiver receiver;
+
 }

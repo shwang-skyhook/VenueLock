@@ -20,8 +20,8 @@ public class AcceleratorIntentService extends IntentService {
     public static final String ACTION_BAZ = "com.skyhookwireless.venuelock.action.BAZ";
 
     // TODO: Rename parameters
-    public static final String EXTRA_PARAM1 = "com.skyhookwireless.venuelock.extra.PARAM1";
-    public static final String EXTRA_PARAM2 = "com.skyhookwireless.venuelock.extra.PARAM2";
+    public static final String VENUE_ID = "TEST STRING";
+    public static final CampaignVenue CAMPAIGN_VENUE = null;
 
     public AcceleratorIntentService() {
         super("AcceleratorIntentService");
@@ -39,10 +39,11 @@ public class AcceleratorIntentService extends IntentService {
                 if (venue != null) {
                     if (AcceleratorClient.getCampaignVenueTransition(intent) == CampaignVenue.CAMPAIGN_VENUE_TRANSITION_ENTER) {
                         //process enter transition...
-                        Intent myIntent = new Intent(this, ScanActivity.class);
-
-                        myIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        myIntent.putExtra("YourStringKey", "yourString");
+                        Intent broadcastIntent = new Intent();
+                        broadcastIntent.setAction(ScanActivity.ResponseReceiver.ACTION_RESP);
+                        broadcastIntent.addCategory(Intent.CATEGORY_DEFAULT);
+                        broadcastIntent.putExtra(VENUE_ID, Long.toString(venue.venueId));
+                        sendBroadcast(broadcastIntent);
 
                     } else {
                         //process exit transition...
