@@ -401,15 +401,11 @@ public class BlankFragment extends Fragment {
 
     private void showNotification(String message) {
         mBuilder = new NotificationCompat.Builder(getActivity().getApplicationContext());
-        NotificationManager notificationManager = (NotificationManager) getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
         mBuilder.setSmallIcon(R.drawable.abc_btn_check_material);
         mBuilder.setContentTitle("VenueLock Trigger");
         mBuilder.setContentText(message);
 
-        //Intent intent = new Intent(this, AcceleratorActivity.class);
-        //PendingIntent pIntent = PendingIntent.getActivity(this, (int) System.currentTimeMillis(), intent, 0);
-        //mBuilder.setContentIntent(pIntent);
-        notificationManager = (NotificationManager) getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManager notificationManager = (NotificationManager) getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
         int mNotificationId = 001;
         notificationManager.notify(mNotificationId, mBuilder.build());
     }

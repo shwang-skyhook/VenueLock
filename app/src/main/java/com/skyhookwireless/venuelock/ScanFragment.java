@@ -62,11 +62,11 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
     }
 
     public interface onScanDataReceivedListener {
-        public void sendScanData(List<ScanResult> wifiList);
-
-        public void stopScanning();
-        public void startScanning();
+        void sendScanData(List<ScanResult> wifiList);
+        void stopScanning();
+        void startScanning();
     }
+
     @Override
     public void onPause() {
         super.onPause();
