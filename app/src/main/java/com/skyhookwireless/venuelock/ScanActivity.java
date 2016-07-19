@@ -232,7 +232,7 @@ public class ScanActivity extends AppCompatActivity
             }
         });
 
-        accelerator = new AcceleratorClient(this, ALEX_KEY, this, this);
+        accelerator = new AcceleratorClient(this, VENUELOCK, this, this);
         accelerator.connect();
 
     }
@@ -317,7 +317,7 @@ public class ScanActivity extends AppCompatActivity
 
     private final static String ACCELERATOR_KEY = "eJwVwUEKACAIBMBzjxHUUttjYH4q-ns0I034GxBvJ7GtZyzyzUozTKl6gHQ4Yi6rBN8HEUsLFA";
     private final static String ALEX_KEY = "eJwVwUsOABAMBcC1wzShXj-WRHspcXcx00qrXx-QclTgcy0hjhRyqBMjJyXUNodZDb8PEdQLLQ";
-    private final static String DEMO_KEY = "eJwVwUEKwDAIBMBzHiPoIqx7bIN-quTvoTOxwn8gc32YDb1NE1TmObDsHuNDYErh2ucCEtsLLA";
+    private final static String VENUELOCK = "eJwVwUEKACAIBMBzjxEsk3aPhfap6O_RTC1VP4f2clyxNyOFICQVJhZ0YZuINXsO2H0TQAs6";
 
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
