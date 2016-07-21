@@ -235,120 +235,137 @@ public class BlankFragment extends Fragment {
                 currentScanTriggers.clear();
             }
 
-            HashMap<String, ScannedVenue> vidToScannedVenueCaseAv2 = new HashMap<>();
-            HashMap<String, ScannedVenue> vidToScannedVenueCaseBv2 = new HashMap<>();
-            HashMap<String, ScannedVenue> vidToScannedVenueCaseCv2 = new HashMap<>();
+            HashMap<String, ScannedVenue> vidToScannedVenueCaseAv3 = new HashMap<>();
+            HashMap<String, ScannedVenue> vidToScannedVenueCaseBv3 = new HashMap<>();
+            HashMap<String, ScannedVenue> vidToScannedVenueCaseCv3 = new HashMap<>();
+            HashMap<String, ScannedVenue> vidToScannedVenueCaseDv3 = new HashMap<>();
 
             if (wifiList != null && wifiList.length > 0) {
                 for (ScanResult sr : wifiList[0]) {
-                    if (sr.level > -80) {   //filter rssi < -80
+                    if (sr.level >= -73) {   //Filter WiFi APs with Rssi >= -73 dBm
                         String vid = myDbHelper.getVidForMac(sr.BSSID.replace(":", "").toUpperCase());  //remove ":" from mac
                         if (vid != "") {
-                            if (sr.level > -75) {
-                                if (sr.level > -65) {
-                                    addToHashmap(sr, vidToScannedVenueCaseAv2, vid);
+                            if (sr.level >= -65) {
+                                if (sr.level >= -55) {
+                                    if (sr.level >= -50) {
+                                        addToHashmap(sr, vidToScannedVenueCaseAv3, vid);
+                                    }
+                                    addToHashmap(sr, vidToScannedVenueCaseBv3, vid);
                                 }
-                                addToHashmap(sr, vidToScannedVenueCaseBv2, vid);
+                                addToHashmap(sr, vidToScannedVenueCaseCv3, vid);
                             }
-                            addToHashmap(sr, vidToScannedVenueCaseCv2, vid);
+                            addToHashmap(sr, vidToScannedVenueCaseDv3, vid);
                         }
                     }
                 }
             }
 
-            if (vidToScannedVenueCaseAv2 != null && !vidToScannedVenueCaseAv2.isEmpty()) {
+            if (vidToScannedVenueCaseAv3 != null && !vidToScannedVenueCaseAv3.isEmpty()) {
                 //case A algorithm
-                switch (vidToScannedVenueCaseAv2.size()) {
+                switch (vidToScannedVenueCaseAv3.size()) {
                     case 0:
                         break;
                     default:
-                        /*  a. Filter WiFi APs with Rssi >= -65
+                        /*  a. Filter WiFi APs with Rssi >= -50 dBm
                             b. Count number of APs per venue
-                            c. Ignore venues with one or two APs
-                            d. Lock to the venue with the maximum number of APs
+                            c. Lock to a venue with the maximum number of APs
+                            note that one AP with RSSi higher than -50 dBm is sufficient to VL here
                         */
 
-                        Integer secondHighest = Integer.MIN_VALUE;
                         Integer highest = Integer.MIN_VALUE;
                         Integer current = Integer.MIN_VALUE;
                         String venueId = "";
-                        for (String vid : vidToScannedVenueCaseAv2.keySet()) {
-                            current = vidToScannedVenueCaseAv2.get(vid).getCount();
-                            if (current < 3)
-                                continue;
+                        for (String vid : vidToScannedVenueCaseAv3.keySet()) {
+                            current = vidToScannedVenueCaseAv3.get(vid).getCount();
                             if (current > highest) {
-                                secondHighest = highest;
                                 highest = current;
                                 venueId = vid;
-                            } else if (current > secondHighest) {
-                                secondHighest = current;
                             }
                         }
                         if (venueId != ""){
-                            vidToScannedVenueCaseAv2.get(venueId).setTriggeringAlgorithm("A");
-                            return vidToScannedVenueCaseAv2.get(venueId);
+                            vidToScannedVenueCaseAv3.get(venueId).setTriggeringAlgorithm("A");
+                            return vidToScannedVenueCaseAv3.get(venueId);
                         }
                         break;
                 }
             }
-            if (vidToScannedVenueCaseBv2 != null && !vidToScannedVenueCaseBv2.isEmpty()) {
+            if (vidToScannedVenueCaseBv3 != null && !vidToScannedVenueCaseBv3.isEmpty()) {
                 //case B algorithm
-                switch (vidToScannedVenueCaseBv2.size()) {
+                switch (vidToScannedVenueCaseBv3.size()) {
                     case 0:
                         break;
                     default:
-                        /*  a. Filter WiFi APs with Rssi >=-75
+                        /*  a. Filter WiFi APs with Rssi >= -55 dBm
                             b. Count number of APs per venue
-                            c. If the venue with maximum count >= (the venue with the next higher count + 3), report the venue with the max count as venue lock
+                            c. Lock to a venue with the maximum number of APs with at least 3 MAC addresses
                         */
-                        Integer secondHighest = Integer.MIN_VALUE;
                         Integer highest = Integer.MIN_VALUE;
                         Integer current = Integer.MIN_VALUE;
                         String venueId = "";
-                        for (String vid : vidToScannedVenueCaseBv2.keySet()) {
-                            current = vidToScannedVenueCaseBv2.get(vid).getCount();
+                        for (String vid : vidToScannedVenueCaseBv3.keySet()) {
+                            current = vidToScannedVenueCaseBv3.get(vid).getCount();
                             if (current > highest) {
-                                secondHighest = highest;
                                 highest = current;
                                 venueId = vid;
-                            } else if (current > secondHighest) {
-                                secondHighest = current;
                             }
                         }
-                        if (highest >= secondHighest + 3) {
-                            vidToScannedVenueCaseBv2.get(venueId).setTriggeringAlgorithm("B");
-                            return vidToScannedVenueCaseBv2.get(venueId);
+                        if (highest >= 3) {
+                            vidToScannedVenueCaseBv3.get(venueId).setTriggeringAlgorithm("B");
+                            return vidToScannedVenueCaseBv3.get(venueId);
                         }
                         break;
                 }
             }
-            if (vidToScannedVenueCaseCv2 != null && !vidToScannedVenueCaseCv2.isEmpty()) {
+            if (vidToScannedVenueCaseCv3 != null && !vidToScannedVenueCaseCv3.isEmpty()) {
                 //case C algorithm
-                switch (vidToScannedVenueCaseCv2.size()) {
+                switch (vidToScannedVenueCaseCv3.size()) {
                     case 0:
                         break;
                     default:
-                        /*  a. Filter WiFi APs with Rssi >=-80
+                        /*  a. Filter WiFi APs with Rssi >= -65 dBm
                             b. Count number of APs per venue
-                            c. If the venue with maximum count >= (the venue with the next higher count + 4), report the venue with the max count as venue lock
+                            c. Lock to a venue with the maximum number of APs with at least 4 MAC addresses
                         */
-                        Integer secondHighest = Integer.MIN_VALUE;
                         Integer highest = Integer.MIN_VALUE;
                         Integer current = Integer.MIN_VALUE;
                         String venueId = "";
-                        for (String vid : vidToScannedVenueCaseCv2.keySet()) {
-                            current = vidToScannedVenueCaseCv2.get(vid).getCount();
+                        for (String vid : vidToScannedVenueCaseCv3.keySet()) {
+                            current = vidToScannedVenueCaseCv3.get(vid).getCount();
                             if (current > highest) {
-                                secondHighest = highest;
                                 highest = current;
                                 venueId = vid;
-                            } else if (current > secondHighest) {
-                                secondHighest = current;
                             }
                         }
-                        if (highest >= secondHighest + 4) {
-                            vidToScannedVenueCaseCv2.get(venueId).setTriggeringAlgorithm("C");
-                            return vidToScannedVenueCaseCv2.get(venueId);
+                        if (highest >= 4) {
+                            vidToScannedVenueCaseCv3.get(venueId).setTriggeringAlgorithm("C");
+                            return vidToScannedVenueCaseCv3.get(venueId);
+                        }
+                        break;
+                }
+            }
+            if (vidToScannedVenueCaseDv3 != null && !vidToScannedVenueCaseDv3.isEmpty()) {
+                //case C algorithm
+                switch (vidToScannedVenueCaseDv3.size()) {
+                    case 0:
+                        break;
+                    default:
+                        /*  a. Filter WiFi APs with Rssi >= -73 dBm
+                            b. Count number of APs per venue
+                            c. Lock to a venue with the maximum number of APs with at least 9 (nine) MAC addresses
+                        */
+                        Integer highest = Integer.MIN_VALUE;
+                        Integer current = Integer.MIN_VALUE;
+                        String venueId = "";
+                        for (String vid : vidToScannedVenueCaseDv3.keySet()) {
+                            current = vidToScannedVenueCaseDv3.get(vid).getCount();
+                            if (current > highest) {
+                                highest = current;
+                                venueId = vid;
+                            }
+                        }
+                        if (highest >= 9) {
+                            vidToScannedVenueCaseDv3.get(venueId).setTriggeringAlgorithm("D");
+                            return vidToScannedVenueCaseDv3.get(venueId);
                         }
                         break;
                 }
@@ -370,8 +387,6 @@ public class BlankFragment extends Fragment {
                 stringAdapter.notifyDataSetChanged();
             }
         }
-
-
     }
 
     private void initializeDB() {
