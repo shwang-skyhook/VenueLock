@@ -157,6 +157,10 @@ public class BlankFragment extends Fragment {
         this.scans = wifiList;
     }
 
+    public void setActivityRecognition(String walkingConfidence) {
+        walking = walkingConfidence;
+    }
+
     public void stopScanning() {
         myDbHelper.closeDataBase();
 
@@ -382,7 +386,9 @@ public class BlankFragment extends Fragment {
                         showToast("Triggered venue: " + scannedVenue.getName());
                         venueTriggeredListener.plotVenue(scannedVenue);
                     }
-                    strings.add(scannedVenue.getName() + ": " + scannedVenue.getTriggeringAlgorithm() + " at: " +getDate());
+                    String log = scannedVenue.getName() + ", Algorithm: " + scannedVenue.getTriggeringAlgorithm() + ", Walking: "+ walking + "\n" + getDate();
+                    strings.add(log);
+                    Log.d("Venuelock Trigger", log);
                 }
                 stringAdapter.notifyDataSetChanged();
             }
@@ -442,6 +448,7 @@ public class BlankFragment extends Fragment {
     private Integer parseCount;
     private NotificationCompat.Builder mBuilder;
     private Integer INTERVAL = 5000;
+    private String walking;
     onVenueTriggeredListener venueTriggeredListener;
 
 }

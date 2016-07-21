@@ -35,6 +35,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.ActivityRecognition;
 import com.google.android.gms.maps.model.LatLng;
 import com.skyhookwireless.accelerator.AcceleratorClient;
 import com.skyhookwireless.accelerator.CampaignVenue;
@@ -60,7 +63,42 @@ public class ScanActivity extends AppCompatActivity
         AcceleratorClient.ConnectionCallbacks,
         AcceleratorClient.OnRegisterForCampaignMonitoringResultListener,
         AcceleratorClient.OnStopCampaignMonitoringResultListener,
-        AcceleratorClient.OnStartCampaignMonitoringResultListener{
+        AcceleratorClient.OnStartCampaignMonitoringResultListener,
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener{
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        Intent activityRecognitionIntent = new Intent( this, ActivityRecognitionService.class );
+        PendingIntent activityRecognitionPendingIntent = PendingIntent.getService( this, 0, activityRecognitionIntent, PendingIntent.FLAG_UPDATE_CURRENT );
+        ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates( mApiClient, 3000, activityRecognitionPendingIntent );
+
+        IntentFilter filter = new IntentFilter(ResponseReceiver.UPDATE_WALKING);
+        filter.addCategory(Intent.CATEGORY_DEFAULT);
+        receiver = new ResponseReceiver();
+        registerReceiver(receiver, filter);
+    }
+
+    public class ResponseReceiver extends BroadcastReceiver {
+        public static final String UPDATE_WALKING = "com.skyhookwireless.venuelock.intent.action.UPDATE_WALKING";
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String walkingConfidence = intent.getStringExtra(ActivityRecognitionService.UPDATE_WALKING);
+            blankFragment.setActivityRecognition(walkingConfidence);
+        }
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+
+    }
+
     @Override
     public void onStopCampaignMonitoringResult(int i, String s) {
 
@@ -69,7 +107,6 @@ public class ScanActivity extends AppCompatActivity
     @Override
     public void onStartCampaignMonitoringResult(int i, String s) {
         boolean monitoringAll = accelerator.isMonitoringAllCampaigns();
-        fetchNearbyMonitoredVenues();
     }
 
     @Override
@@ -79,7 +116,9 @@ public class ScanActivity extends AppCompatActivity
 
     @Override
     public void stopScanning() {
-        fetchNearbyMonitoredVenues();
+        if (accelerator.isConnected()){
+            fetchNearbyMonitoredVenues();
+        }
         blankFragment.stopScanning();
 
         new AlertDialog.Builder(this)
@@ -117,11 +156,6 @@ public class ScanActivity extends AppCompatActivity
                         scanFragment.AppendComments(input.getText().toString());
                     }
                 })
-                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        // do nothing
-                    }
-                })
                 .setIcon(android.R.drawable.btn_plus)
                 .show();
 
@@ -129,8 +163,10 @@ public class ScanActivity extends AppCompatActivity
 
     @Override
     public void startScanning() {
-        accelerator.startMonitoringForAllCampaigns(this);
-        fetchNearbyMonitoredVenues();
+        if (accelerator.isConnected()) {
+            accelerator.startMonitoringForAllCampaigns(this);
+            fetchNearbyMonitoredVenues();
+        }
         blankFragment.startScanning();
     }
 
@@ -175,14 +211,7 @@ public class ScanActivity extends AppCompatActivity
         });
     }
 
-    public class ResponseReceiver extends BroadcastReceiver {
-        public static final String ACTION_RESP = "Message Processed";
 
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String vid = intent.getStringExtra(AcceleratorIntentService.VENUE_ID);
-        }
-    }
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
      * fragments for each of the sections. We use a
@@ -235,6 +264,14 @@ public class ScanActivity extends AppCompatActivity
         accelerator = new AcceleratorClient(this, VENUELOCK, this, this);
         accelerator.connect();
 
+        mApiClient = new GoogleApiClient.Builder(this)
+                .addApi(ActivityRecognition.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
+
+        mApiClient.connect();
+
     }
 
     @Override
@@ -250,6 +287,7 @@ public class ScanActivity extends AppCompatActivity
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
+
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
@@ -289,7 +327,7 @@ public class ScanActivity extends AppCompatActivity
         PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         accelerator.registerForCampaignMonitoring(pendingIntent, this);
 
-        IntentFilter filter = new IntentFilter(ResponseReceiver.ACTION_RESP);
+        IntentFilter filter = new IntentFilter(ResponseReceiver.UPDATE_WALKING);
         filter.addCategory(Intent.CATEGORY_DEFAULT);
         receiver = new ResponseReceiver();
         registerReceiver(receiver, filter);
@@ -297,11 +335,12 @@ public class ScanActivity extends AppCompatActivity
 
     @Override
     public void onDisconnected() {
+        unregisterReceiver(receiver);
     }
 
     @Override
     public void onConnectionFailed(int i) {
-
+        i = 9;
     }
 
     @Override
@@ -318,6 +357,7 @@ public class ScanActivity extends AppCompatActivity
     private final static String ACCELERATOR_KEY = "eJwVwUEKACAIBMBzjxHUUttjYH4q-ns0I034GxBvJ7GtZyzyzUozTKl6gHQ4Yi6rBN8HEUsLFA";
     private final static String ALEX_KEY = "eJwVwUsOABAMBcC1wzShXj-WRHspcXcx00qrXx-QclTgcy0hjhRyqBMjJyXUNodZDb8PEdQLLQ";
     private final static String VENUELOCK = "eJwVwUEKACAIBMBzjxEsk3aPhfap6O_RTC1VP4f2clyxNyOFICQVJhZ0YZuINXsO2H0TQAs6";
+    private final static String VENUELOCKCMEPORTAL = "eJwNwcENACEIAMG3xZC4GII81UBT5no_Z2j0h-5Ou740pxri5JEZZZKmSI0NteKMqO8HD-kLKw";
 
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
@@ -347,7 +387,6 @@ public class ScanActivity extends AppCompatActivity
             switch (position) {
                 case 0:
                     scanFragment = (ScanFragment) createdFragment;
-                    //scanFragment.setFileName(blankFragment.getFileName());
                     break;
                 case 1:
                     venueMapFragment = (VenueMapFragment) createdFragment;
@@ -476,5 +515,6 @@ public class ScanActivity extends AppCompatActivity
     private String fileName;
     private Boolean mLocationPermissions;
     private ResponseReceiver receiver;
-
+    public GoogleApiClient mApiClient;
+    public Boolean walking;
 }
