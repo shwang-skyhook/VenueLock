@@ -21,7 +21,12 @@ public class DataBaseHelper extends SQLiteOpenHelper
 {
     private SQLiteDatabase myDataBase;
     private final Context myContext;
-    private static final String DATABASE_NAME = "venue_mac_bos.db";
+    private String tableName;
+    private static final String DATABASE_NAME = "venue_mac_bosphlsfo.db";
+    private static final String BOSTON = "venue_mac_boston";
+    private static final String PHILLY = "venue_mac_philly";
+    private static final String SANFRAN = "venue_mac_sanfran";
+    private static final String MAINE = "venue_mac_maine";
     public final static String DATABASE_PATH ="/data/data/com.skyhookwireless.venuelock/databases/";
     public static final int DATABASE_VERSION = 1;
     //public static final int DATABASE_VERSION_old = 1;
@@ -31,7 +36,9 @@ public class DataBaseHelper extends SQLiteOpenHelper
     {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         this.myContext = context;
+        tableName = BOSTON;
     }
+
 
     //Create a empty database on the system
     public void createDataBase() throws IOException
@@ -115,6 +122,31 @@ public class DataBaseHelper extends SQLiteOpenHelper
         myDataBase = SQLiteDatabase.openDatabase(myPath, null, SQLiteDatabase.OPEN_READWRITE);
     }
 
+    public void selectTable(String city) {
+        if (city != null) {
+            switch (city) {
+                case "Boston":
+                    tableName = BOSTON;
+                    break;
+                case "Philly":
+                    tableName = PHILLY;
+                    break;
+                case "SanFran":
+                    tableName = SANFRAN;
+                    break;
+                case "Maine":
+                    tableName = MAINE;
+                    break;
+                default:
+                    tableName = BOSTON;
+                    break;
+            }
+        }
+        else {
+            tableName = BOSTON;
+        }
+
+    }
     public synchronized void closeDataBase()throws SQLException
     {
         if(myDataBase != null)
@@ -146,7 +178,7 @@ public class DataBaseHelper extends SQLiteOpenHelper
         String s = "";
         try {
             Log.d("VenueLock Database", "getVidForMac: " + mac);
-            String getVidQuery = "select vid from venue_mac_boston where _id=\"" + mac + "\"" ;
+            String getVidQuery = "select vid from " + tableName + " where _id=\"" + mac + "\"" ;
             SQLiteDatabase db = this.getReadableDatabase();
             Cursor cursor = db.rawQuery(getVidQuery, null);
             cursor.moveToFirst();
@@ -167,7 +199,7 @@ public class DataBaseHelper extends SQLiteOpenHelper
     public ScannedVenue getScannedVenue(String mac) {
         try {
             Log.d("VenueLock Database", "getScannedVenue: " + mac);
-            String getVidQuery = "select vid, vname, vlatitude, vlongitude from venue_mac_boston where _id=\"" + mac + "\"" ;
+            String getVidQuery = "select vid, vname, vlatitude, vlongitude from " + tableName + " where _id=\"" + mac + "\"" ;
             SQLiteDatabase db = this.getReadableDatabase();
             Cursor cursor = db.rawQuery(getVidQuery, null);
             String s = "";

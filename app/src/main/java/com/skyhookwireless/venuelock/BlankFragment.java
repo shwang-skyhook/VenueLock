@@ -49,6 +49,7 @@ public class BlankFragment extends Fragment {
     private String mParam2;
     private Timer timer;
     private TimerTask doAsynchronousTask;
+    private String city = "Boston";
 
     private OnFragmentInteractionListener mListener;
 
@@ -85,8 +86,7 @@ public class BlankFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-
-
+        city = "Boston";
     }
 
     @Override
@@ -100,6 +100,12 @@ public class BlankFragment extends Fragment {
         lv = (ListView) view.findViewById(R.id.listView);
         lv.setAdapter(stringAdapter);
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        city = "Boston";
+        super.onResume();
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -160,6 +166,11 @@ public class BlankFragment extends Fragment {
     public void setActivityRecognition(String walkingConfidence) {
         walking = walkingConfidence;
     }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
 
     public void stopScanning() {
         myDbHelper.closeDataBase();
@@ -395,10 +406,12 @@ public class BlankFragment extends Fragment {
         }
     }
 
+
     private void initializeDB() {
         Log.d("Venuelock Algorithm", "Initializing DB");
 
         myDbHelper = new DataBaseHelper(getActivity().getApplicationContext());
+        myDbHelper.selectTable(city);
         try {
             myDbHelper.createDataBase();
         } catch (IOException ioe) {

@@ -3,6 +3,7 @@
     <string name="action_settings">Sync Last Session</string>
     <string name="action_clear_scans">Clear Triggered Venues</string>
     <string name="refresh_accelerator_venues">Refresh Accelerator Venues</string>
+    <string name="select_city">Select City</string>
     <string name="section_format">Hello World from section: %1$d</string>
     <string name="google_maps_key">AIzaSyDVwojwyd0qBz9ndAdMDOTZngiPOe8QLis</string>
     <string name="hello_blank_fragment">Placeholder for Demo</string>

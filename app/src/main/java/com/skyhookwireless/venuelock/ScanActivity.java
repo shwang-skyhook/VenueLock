@@ -2,6 +2,7 @@ package com.skyhookwireless.venuelock;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -33,7 +34,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -46,6 +51,7 @@ import com.skyhookwireless.accelerator.VenueInfo;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import okhttp3.MediaType;
@@ -271,7 +277,6 @@ public class ScanActivity extends AppCompatActivity
                 .build();
 
         mApiClient.connect();
-
     }
 
     @Override
@@ -301,6 +306,27 @@ public class ScanActivity extends AppCompatActivity
         }
         else if (id == R.id.refresh_accelerator_venues) {
             fetchNearbyMonitoredVenues();
+        }
+        else if (id == R.id.select_city) {
+            final CharSequence[] items = { "Boston","Philly","SanFran","Maine"};
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Select City");
+            builder.setSingleChoiceItems(items, -1,
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int item) {
+                            blankFragment.setCity(items[item].toString());
+                        }
+                    });
+
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    Toast.makeText(ScanActivity.this, "City Selected", Toast.LENGTH_SHORT)
+                            .show();
+                }
+            });
+            AlertDialog alert = builder.create();
+            alert.show();
         }
 
         return super.onOptionsItemSelected(item);
@@ -340,7 +366,6 @@ public class ScanActivity extends AppCompatActivity
 
     @Override
     public void onConnectionFailed(int i) {
-        i = 9;
     }
 
     @Override
