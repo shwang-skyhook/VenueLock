@@ -90,8 +90,8 @@ public class ScanActivity extends AppCompatActivity
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            String walkingConfidence = intent.getStringExtra(ActivityRecognitionService.UPDATE_WALKING);
-            blankFragment.setActivityRecognition(walkingConfidence);
+            String activityReport = intent.getStringExtra(ActivityRecognitionService.UPDATE_WALKING);
+            blankFragment.setActivityRecognition(activityReport);
         }
     }
 

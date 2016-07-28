@@ -77,23 +77,16 @@ public class ActivityRecognitionService extends IntentService {
     }
 
     private void handleDetectedActivities(List<DetectedActivity> probableActivities) {
-        String updateWalking = "0";
+        StringBuilder sb = new StringBuilder();
         for( DetectedActivity activity : probableActivities ) {
-            switch( activity.getType() ) {
-                case DetectedActivity.WALKING: {
-                    Log.e( "ActivityRecogition", "Walking: " + activity.getConfidence() );
-//                    if( activity.getConfidence() >= 75 ) {
-//                        updateWalking = "walking";
-//                    }
-                    updateWalking = activity.getConfidence()+"";
-                    break;
-                }
-            }
+            Log.d( "ActivityRecogition", activity.toString());
+            sb.append("\n");
+            sb.append(activity.toString());
         }
         Intent broadcastIntent = new Intent();
         broadcastIntent.setAction(ScanActivity.ResponseReceiver.UPDATE_WALKING);
         broadcastIntent.addCategory(Intent.CATEGORY_DEFAULT);
-        broadcastIntent.putExtra(UPDATE_WALKING, updateWalking);
+        broadcastIntent.putExtra(UPDATE_WALKING, sb.toString());
         sendBroadcast(broadcastIntent);
     }
 

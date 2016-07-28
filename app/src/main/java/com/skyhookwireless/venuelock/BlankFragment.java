@@ -397,7 +397,7 @@ public class BlankFragment extends Fragment {
                         showToast("Triggered venue: " + scannedVenue.getName());
                         venueTriggeredListener.plotVenue(scannedVenue);
                     }
-                    String log = scannedVenue.getName() + ", Algorithm: " + scannedVenue.getTriggeringAlgorithm() + ", Walking: "+ walking + "\n" + getDate();
+                    String log = scannedVenue.getName() + ", Algorithm: " + scannedVenue.getTriggeringAlgorithm() + "\nActivity Report: "+ walking + "\n" + getDate();
                     strings.add(log);
                     Log.d("Venuelock Trigger", log);
                 }
