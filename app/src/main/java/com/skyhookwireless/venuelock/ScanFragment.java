@@ -96,12 +96,10 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
         }
         else if (mySensor.getType() == Sensor.TYPE_GRAVITY) {
             List<Float> eventList = Arrays.asList(event.values[0], event.values[1], event.values[2]);
-
             gravData.add(eventList);
         }
         else if (mySensor.getType() == Sensor.TYPE_GYROSCOPE) {
             List<Float> eventList = Arrays.asList(event.values[0], event.values[1], event.values[2]);
-
             gyroData.add(eventList);
         }
         else if (mySensor.getType() == Sensor.TYPE_LIGHT) {
@@ -293,22 +291,28 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
 
         Log.d("Venuelock Scanfragment","collecting wifi data");
         wifiList = wifiManager.getScanResults();
-        scanDataReceivedListener.sendScanData(wifiList);
-        for (ScanResult wifiScan : wifiList) {
-            scanSB.append(filename + ", Scan "
-                    + new Integer(numScans+1).toString() + ", "
-                    + proximity + ", "
-                    + wifiScan.toString()+"\n");
+        if (wifiList != null) {
+            scanDataReceivedListener.sendScanData(wifiList);
+            for (ScanResult wifiScan : wifiList) {
+                scanSB.append(filename + ", Scan "
+                        + new Integer(numScans+1).toString() + ", "
+                        + proximity + ", "
+                        + wifiScan.toString()+"\n");
+            }
         }
+
 
         Log.d("Venuelock Scanfragment","collecting cell data");
         cellList = cellManager.getAllCellInfo();
-        for (CellInfo cellScan : cellList) {
-            scanSB.append(filename + ", Scan "
-                    + new Integer(numScans+1).toString() + ", "
-                    + proximity + ", "
-                    + cellScan.toString() + "\n");
+        if (cellList != null) {
+            for (CellInfo cellScan : cellList) {
+                scanSB.append(filename + ", Scan "
+                        + new Integer(numScans+1).toString() + ", "
+                        + proximity + ", "
+                        + cellScan.toString() + "\n");
+            }
         }
+
 
         Log.d("Venuelock Scanfragment","collecting bluetooth data");
         for (String device : bleDevices) {

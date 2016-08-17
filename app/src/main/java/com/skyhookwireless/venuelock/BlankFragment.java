@@ -389,6 +389,7 @@ public class BlankFragment extends Fragment {
         }
 
         protected void onPostExecute(ScannedVenue scannedVenue) {
+            Log.d("Venuelock Algorithm", "Finished background db query");
             if (scannedVenue != null) {
                 if (!currentScanTriggers.contains(scannedVenue.getName())){
                     currentScanTriggers.add(scannedVenue.getName());
@@ -460,7 +461,7 @@ public class BlankFragment extends Fragment {
     private ListView lv;
     private Integer parseCount;
     private NotificationCompat.Builder mBuilder;
-    private Integer INTERVAL = 5000;
+    private Integer INTERVAL = 3000;
     private String walking;
     onVenueTriggeredListener venueTriggeredListener;
 
