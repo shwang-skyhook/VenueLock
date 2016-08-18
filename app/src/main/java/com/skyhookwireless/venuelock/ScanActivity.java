@@ -16,7 +16,6 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
 import android.support.design.widget.TabLayout;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -251,21 +250,6 @@ public class ScanActivity extends AppCompatActivity
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
-
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (venueMapFragment != null) {
-                    String groundTruth = venueMapFragment.getGroundTruth();
-                    scanFragment.writeGroundTruth(groundTruth);
-                    Snackbar.make(view, "Ground Truth Set at " + groundTruth, Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
-                }
-
-            }
-        });
 
         accelerator = new AcceleratorClient(this, VENUELOCK, this, this);
         accelerator.connect();
