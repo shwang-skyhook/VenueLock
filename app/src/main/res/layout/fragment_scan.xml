@@ -82,7 +82,7 @@
             android:layout_alignParentStart="true"
             android:layout_below="@+id/nearbyButton"
             android:onClick="onVeryCloseButtonClicked"
-            android:text="Very Close (Within 5M)" />
+            android:text="Very Close (Within 10M)" />
 
         <Button
             android:id="@+id/justInsideButton"
