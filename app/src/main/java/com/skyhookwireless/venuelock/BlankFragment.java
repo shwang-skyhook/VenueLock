@@ -19,7 +19,10 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -29,6 +32,11 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
+import io.realm.RealmMigration;
+import io.realm.RealmQuery;
+import io.realm.RealmResults;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -87,6 +95,21 @@ public class BlankFragment extends Fragment {
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
         city = "Boston";
+
+
+        copyBundledRealmFile(this.getResources().openRawResource(R.raw.export2), "export2");
+        RealmConfiguration config = new RealmConfiguration.Builder(this.getActivity().getApplicationContext())
+                .name("export2")
+                .schemaVersion(0)
+                .build();
+        realm = Realm.getInstance(config);
+        realm.setDefaultConfiguration(config);
+        realm.beginTransaction();MacAddress ma404 = realm.createObject(MacAddress.class);ma404.set_Id("E01C413BD514");ma404.setSsid("QEBHW");ma404.setVid("Skyhook vid");ma404.setVname("Skyhook Office");ma404.setVlatitude("42.3519410");ma404.setVlongitude("-71.0478470");realm.commitTransaction();
+        realm.beginTransaction();MacAddress ma405 = realm.createObject(MacAddress.class);ma405.set_Id("E01C413BDF15");ma405.setSsid("QEBHW");ma405.setVid("Skyhook vid");ma405.setVname("Skyhook Office");ma405.setVlatitude("42.3519410");ma405.setVlongitude("-71.0478470");realm.commitTransaction();
+        realm.beginTransaction();MacAddress ma406 = realm.createObject(MacAddress.class);ma406.set_Id("E01C413BD515");ma406.setSsid("QEBHW");ma406.setVid("Skyhook vid");ma406.setVname("Skyhook Office");ma406.setVlatitude("42.3519410");ma406.setVlongitude("-71.0478470");realm.commitTransaction();
+        realm.beginTransaction();MacAddress ma407 = realm.createObject(MacAddress.class);ma407.set_Id("E01C413BD514");ma407.setSsid("QEBHW");ma407.setVid("Skyhook vid");ma407.setVname("Skyhook Office");ma407.setVlatitude("42.3519410");ma407.setVlongitude("-71.0478470");realm.commitTransaction();
+        realm.beginTransaction();MacAddress ma408 = realm.createObject(MacAddress.class);ma408.set_Id("E01C413BDF14");ma408.setSsid("QEBHW");ma408.setVid("Skyhook vid");ma408.setVname("Skyhook Office");ma408.setVlatitude("42.3519410");ma408.setVlongitude("-71.0478470");realm.commitTransaction();
+        realm.beginTransaction();MacAddress ma409 = realm.createObject(MacAddress.class);ma409.set_Id("506028363020");ma409.setSsid("QEBHW");ma409.setVid("Skyhook vid");ma409.setVname("Skyhook Office");ma409.setVlatitude("42.3519410");ma409.setVlongitude("-71.0478470");realm.commitTransaction();
     }
 
     @Override
@@ -173,7 +196,6 @@ public class BlankFragment extends Fragment {
 
 
     public void stopScanning() {
-        myDbHelper.closeDataBase();
 
         parseCount = 0;
         currentScanTriggers.clear();
@@ -188,7 +210,6 @@ public class BlankFragment extends Fragment {
         if (scans != null && scans.size() > 0) {
             scans.clear();
         }
-        initializeDB();
         parseCount = 0;
         parseScan();
     }
@@ -204,9 +225,8 @@ public class BlankFragment extends Fragment {
                     handler.post(new Runnable() {
                         public void run() {
                             try {
-                                queryDB querydb = new queryDB();
-                                // PerformBackgroundTask this class is the class that extends AsynchTask
-                                querydb.execute(scans);
+                                RealmAsyncTest realmAsyncTest = new RealmAsyncTest();
+                                realmAsyncTest.execute(scans);
                             } catch (Exception e) {
                                 // TODO Auto-generated catch block
                                 Log.e("Venuelock Algorithm", e.getLocalizedMessage());
@@ -224,25 +244,11 @@ public class BlankFragment extends Fragment {
         }
     }
 
+    private class RealmAsyncTest extends AsyncTask<List<ScanResult>, Void, ScannedVenue> {
 
-    class queryDB extends AsyncTask<List<ScanResult>, Void, ScannedVenue> {
-
-        private void addToHashmap(ScanResult sr, HashMap<String, ScannedVenue> hashmap, String vid) {
-            if (!vid.equals("")) {  //insert vid and count into map
-                if (hashmap.containsKey(vid)) {
-                    hashmap.get(vid).IncrementCount();
-                } else {
-                    ScannedVenue scannedVenue = myDbHelper.getScannedVenue(sr.BSSID.replace(":", "").toUpperCase());    //remove ":" from mac
-                    if (scannedVenue != null) {
-                        hashmap.put(vid, scannedVenue);
-                    }
-                }
-            }
-            return;
-        }
-
+        @Override
         protected ScannedVenue doInBackground(List<ScanResult>... wifiList) {
-            // using this.mContext
+            Realm realm = Realm.getDefaultInstance();
             Log.d("Venuelock Algorithm", "Starting background db query");
 
 
@@ -258,18 +264,48 @@ public class BlankFragment extends Fragment {
             if (wifiList != null && wifiList.length > 0) {
                 for (ScanResult sr : wifiList[0]) {
                     if (sr.level >= -73) {   //Filter WiFi APs with Rssi >= -73 dBm
-                        String vid = myDbHelper.getVidForMac(sr.BSSID.replace(":", "").toUpperCase());  //remove ":" from mac
+                        String vid = "";
+                        RealmResults<MacAddress> results = realm.where(MacAddress.class).equalTo("_id", sr.BSSID.replace(":", "").toUpperCase()).findAll();
+                        ScannedVenue scannedVenue = new ScannedVenue();
+                        if (results.size() > 0) {
+                            vid = results.first().getVid();
+                            scannedVenue.setVID(vid);
+                            scannedVenue.setName(results.first().getVname());
+                            scannedVenue.setvLatLng(results.first().getVlatitude(),results.first().getVlongitude());
+                        }
                         if (vid != "") {
                             if (sr.level >= -65) {
                                 if (sr.level >= -55) {
                                     if (sr.level >= -50) {
-                                        addToHashmap(sr, vidToScannedVenueCaseAv3, vid);
+                                        if (vidToScannedVenueCaseAv3.containsKey(vid)) {
+                                            vidToScannedVenueCaseAv3.get(vid).IncrementCount();
+                                        } else {
+                                            if (scannedVenue != null) {
+                                                vidToScannedVenueCaseAv3.put(vid, scannedVenue);
+                                            }
+                                        }
                                     }
-                                    addToHashmap(sr, vidToScannedVenueCaseBv3, vid);
+                                    if (vidToScannedVenueCaseBv3.containsKey(vid)) {
+                                        vidToScannedVenueCaseBv3.get(vid).IncrementCount();
+                                    } else {
+                                        if (scannedVenue != null) {
+                                            vidToScannedVenueCaseBv3.put(vid, scannedVenue);
+                                        }
+                                    }                                }
+                                if (vidToScannedVenueCaseCv3.containsKey(vid)) {
+                                    vidToScannedVenueCaseCv3.get(vid).IncrementCount();
+                                } else {
+                                    if (scannedVenue != null) {
+                                        vidToScannedVenueCaseCv3.put(vid, scannedVenue);
+                                    }
+                                }                              }
+                            if (vidToScannedVenueCaseDv3.containsKey(vid)) {
+                                vidToScannedVenueCaseDv3.get(vid).IncrementCount();
+                            } else {
+                                if (scannedVenue != null) {
+                                    vidToScannedVenueCaseDv3.put(vid, scannedVenue);
                                 }
-                                addToHashmap(sr, vidToScannedVenueCaseCv3, vid);
                             }
-                            addToHashmap(sr, vidToScannedVenueCaseDv3, vid);
                         }
                     }
                 }
@@ -407,26 +443,6 @@ public class BlankFragment extends Fragment {
         }
     }
 
-
-    private void initializeDB() {
-        Log.d("Venuelock Algorithm", "Initializing DB");
-
-        myDbHelper = new DataBaseHelper(getActivity().getApplicationContext());
-        myDbHelper.selectTable(city);
-        try {
-            myDbHelper.createDataBase();
-        } catch (IOException ioe) {
-            Log.e("Venuelock Algorithm", ioe.getLocalizedMessage());
-            throw new Error("Unable to create database");
-        }
-        try {
-            myDbHelper.openDataBase();
-        } catch (SQLException sqle) {
-            Log.e("Venuelock Algorithm", sqle.getLocalizedMessage());
-            throw sqle;
-        }
-    }
-
     private String getDate() {
         Date date = Calendar.getInstance().getTime();
         SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy-HH:mm:ss");
@@ -449,15 +465,28 @@ public class BlankFragment extends Fragment {
         Toast.makeText(getActivity().getApplicationContext(), toastString, Toast.LENGTH_SHORT).show();
     }
 
-    public void acceleratorTrigger(String venueName) {
-
+    private String copyBundledRealmFile(InputStream inputStream, String outFileName) {
+        try {
+            File file = new File(this.getActivity().getFilesDir(), outFileName);
+            FileOutputStream outputStream = new FileOutputStream(file);
+            byte[] buf = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buf)) > 0) {
+                outputStream.write(buf, 0, bytesRead);
+            }
+            outputStream.close();
+            return file.getAbsolutePath();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
+    private Realm realm;
     private List<ScanResult> scans = new LinkedList<ScanResult>();
     private List<String> strings = new LinkedList<String>();
     private List<String> currentScanTriggers = new LinkedList<String>();
     private ArrayAdapter<String> stringAdapter;
-    private DataBaseHelper myDbHelper;
     private ListView lv;
     private Integer parseCount;
     private NotificationCompat.Builder mBuilder;
