@@ -26,7 +26,9 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.telephony.CellInfo;
 import android.telephony.TelephonyManager;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -136,10 +138,39 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_scan, container, false);
         venueEditText = (EditText) view.findViewById(R.id.venueEditText);
+        venueEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int start, int before, int count) {}
+            @Override
+            public void onTextChanged(CharSequence charSequence, int start, int before, int count) {}
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if (editable.length() == 0 || userEditText.getText().toString().isEmpty()) {
+                    startScanButton.setEnabled(false);
+                }
+                else {
+                    startScanButton.setEnabled(true);
+                }
+            }
+        });
         userEditText = (EditText) view.findViewById(R.id.userEditText);
-
+        userEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int start, int before, int count) {}
+            @Override
+            public void onTextChanged(CharSequence charSequence, int start, int before, int count) {}
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if (editable.length() == 0 || userEditText.getText().toString().isEmpty()) {
+                startScanButton.setEnabled(false);
+            }
+                else {
+                    startScanButton.setEnabled(true);
+                }}
+        });
         startScanButton = (Button) view.findViewById(R.id.startScanButton);
         startScanButton.setOnClickListener(this);
+        startScanButton.setEnabled(false);
         stopScanButton = (Button) view.findViewById(R.id.stopScanButton);
         stopScanButton.setOnClickListener(this);
         stopScanButton.setEnabled(false);
