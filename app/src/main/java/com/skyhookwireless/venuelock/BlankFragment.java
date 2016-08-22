@@ -246,7 +246,12 @@ public class BlankFragment extends Fragment {
     }
 
     private class RealmAsyncTest extends AsyncTask<List<ScanResult>, Void, ScannedVenue> {
+        String date;
 
+        @Override
+        protected void onPreExecute() {
+            date = getDate();
+        }
         @Override
         protected ScannedVenue doInBackground(List<ScanResult>... wifiList) {
             Realm realm = Realm.getDefaultInstance();
@@ -426,6 +431,7 @@ public class BlankFragment extends Fragment {
         }
 
         protected void onPostExecute(ScannedVenue scannedVenue) {
+            String finishDate = getDate();
             Log.d("Venuelock Algorithm", "Finished background db query");
             if (scannedVenue != null) {
                 if (!currentScanTriggers.contains(scannedVenue.getName())){
