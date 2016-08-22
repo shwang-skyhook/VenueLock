@@ -108,7 +108,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="fill"
             android:text="@string/hello_world"
-            android:layout_below="@+id/cityTextView"
+            android:layout_below="@+id/completelyInsideButton"
             android:layout_centerHorizontal="true" />
 
         <CheckBox
@@ -119,14 +119,6 @@
             android:layout_alignBottom="@+id/stopScanButton"
             android:layout_alignEnd="@+id/userEditText"
             android:layout_below="@+id/userEditText" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Boston"
-            android:id="@+id/cityTextView"
-            android:layout_below="@+id/completelyInsideButton"
-            android:layout_alignStart="@+id/scanTextView" />
 
     </RelativeLayout>
 </ScrollView>

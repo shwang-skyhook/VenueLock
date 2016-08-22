@@ -55,7 +55,6 @@ public class BlankFragment extends Fragment {
     private String mParam2;
     private Timer timer;
     private TimerTask doAsynchronousTask;
-    private String city = "Boston";
 
     private OnFragmentInteractionListener mListener;
 
@@ -92,7 +91,6 @@ public class BlankFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-        city = "Boston";
 
 
         copyBundledRealmFile(this.getResources().openRawResource(R.raw.export2), "export2");
@@ -128,7 +126,6 @@ public class BlankFragment extends Fragment {
 
     @Override
     public void onResume() {
-        city = "Boston";
         super.onResume();
     }
 
@@ -190,11 +187,6 @@ public class BlankFragment extends Fragment {
     public void setActivityRecognition(String walkingConfidence) {
         walking = walkingConfidence;
     }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
 
     public void stopScanning() {
 
@@ -278,6 +270,7 @@ public class BlankFragment extends Fragment {
                             scannedVenue.setVID(vid);
                             scannedVenue.setName(results.first().getVname());
                             scannedVenue.setvLatLng(results.first().getVlatitude(),results.first().getVlongitude());
+                            scannedVenue.addMac(sr.BSSID.replace(":", "").toUpperCase());
                         }
                         if (vid != "") {
                             if (sr.level >= -65) {
@@ -285,6 +278,7 @@ public class BlankFragment extends Fragment {
                                     if (sr.level >= -50) {
                                         if (vidToScannedVenueCaseAv3.containsKey(vid)) {
                                             vidToScannedVenueCaseAv3.get(vid).IncrementCount();
+                                            vidToScannedVenueCaseAv3.get(vid).addMac(sr.BSSID.replace(":", "").toUpperCase());
                                         } else {
                                             if (scannedVenue != null) {
                                                 vidToScannedVenueCaseAv3.put(vid, scannedVenue);
@@ -293,6 +287,7 @@ public class BlankFragment extends Fragment {
                                     }
                                     if (vidToScannedVenueCaseBv3.containsKey(vid)) {
                                         vidToScannedVenueCaseBv3.get(vid).IncrementCount();
+                                        vidToScannedVenueCaseBv3.get(vid).addMac(sr.BSSID.replace(":", "").toUpperCase());
                                     } else {
                                         if (scannedVenue != null) {
                                             vidToScannedVenueCaseBv3.put(vid, scannedVenue);
@@ -300,6 +295,7 @@ public class BlankFragment extends Fragment {
                                     }                                }
                                 if (vidToScannedVenueCaseCv3.containsKey(vid)) {
                                     vidToScannedVenueCaseCv3.get(vid).IncrementCount();
+                                    vidToScannedVenueCaseCv3.get(vid).addMac(sr.BSSID.replace(":", "").toUpperCase());
                                 } else {
                                     if (scannedVenue != null) {
                                         vidToScannedVenueCaseCv3.put(vid, scannedVenue);
@@ -307,6 +303,7 @@ public class BlankFragment extends Fragment {
                                 }                              }
                             if (vidToScannedVenueCaseDv3.containsKey(vid)) {
                                 vidToScannedVenueCaseDv3.get(vid).IncrementCount();
+                                vidToScannedVenueCaseDv3.get(vid).addMac(sr.BSSID.replace(":", "").toUpperCase());
                             } else {
                                 if (scannedVenue != null) {
                                     vidToScannedVenueCaseDv3.put(vid, scannedVenue);
@@ -444,6 +441,7 @@ public class BlankFragment extends Fragment {
                     String log = scannedVenue.getName() + ", Algorithm: " + scannedVenue.getTriggeringAlgorithm() + "\nActivity Report: "+ walking + "\n" + getDate();
                     strings.add(log);
                     Log.d("Venuelock Trigger", log);
+                    Log.d("Venuelock Trigger", scannedVenue.getMacs());
                 }
                 stringAdapter.notifyDataSetChanged();
             }

@@ -158,12 +158,16 @@ public class ScanActivity extends AppCompatActivity
                 .setView(input)
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        scanFragment.AppendComments(input.getText().toString());
+                        appendToScanData(input.getText().toString());
                     }
                 })
                 .setIcon(android.R.drawable.btn_plus)
                 .show();
 
+    }
+
+    public void appendToScanData(String append) {
+        scanFragment.AppendComments(append);
     }
 
     @Override
@@ -289,29 +293,6 @@ public class ScanActivity extends AppCompatActivity
         }
         else if (id == R.id.refresh_accelerator_venues) {
             fetchNearbyMonitoredVenues();
-        }
-        else if (id == R.id.select_city) {
-            final CharSequence[] items = { "Boston","Philly","SanFran","Maine"};
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Select City");
-            builder.setSingleChoiceItems(items, -1,
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int item) {
-                            blankFragment.setCity(items[item].toString());
-                            scanFragment.cityTextView.setText(items[item].toString());
-
-                        }
-                    });
-
-            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    Toast.makeText(ScanActivity.this, "City Selected", Toast.LENGTH_SHORT)
-                            .show();
-                }
-            });
-            AlertDialog alert = builder.create();
-            alert.show();
         }
 
         return super.onOptionsItemSelected(item);

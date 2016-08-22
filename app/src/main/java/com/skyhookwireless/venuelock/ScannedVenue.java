@@ -7,16 +7,20 @@ import com.google.android.gms.maps.model.IndoorBuilding;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.common.primitives.Doubles;
 
+import java.util.ArrayList;
+
 
 public class ScannedVenue {
 
     public ScannedVenue() {
         vCount = 1;
+        triggeringMacs = new ArrayList<String>();
     }
     public ScannedVenue(String name) {
         vName = name;
         vCount = 1;
         triggeringAlgorithm = "None";
+        triggeringMacs = new ArrayList<String>();
     }
 
     public void IncrementCount() {
@@ -25,6 +29,13 @@ public class ScannedVenue {
 
     public void setName(String name) {
         vName = name;
+    }
+
+    public void addMac(String mac) {
+        triggeringMacs.add(mac);
+    }
+    public String getMacs() {
+        return triggeringMacs.toString();
     }
 
     public Integer getCount() {
@@ -69,4 +80,5 @@ public class ScannedVenue {
     private LatLng vLatLng;
     private Integer vCount;
     private String triggeringAlgorithm;
+    private ArrayList<String> triggeringMacs;
 }
