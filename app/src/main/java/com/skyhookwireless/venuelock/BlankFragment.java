@@ -34,8 +34,6 @@ import java.util.TimerTask;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
-import io.realm.RealmMigration;
-import io.realm.RealmQuery;
 import io.realm.RealmResults;
 
 /**
@@ -104,12 +102,15 @@ public class BlankFragment extends Fragment {
                 .build();
         realm = Realm.getInstance(config);
         realm.setDefaultConfiguration(config);
-        realm.beginTransaction();MacAddress ma404 = realm.createObject(MacAddress.class);ma404.set_Id("E01C413BD514");ma404.setSsid("QEBHW");ma404.setVid("Skyhook vid");ma404.setVname("Skyhook Office");ma404.setVlatitude("42.3519410");ma404.setVlongitude("-71.0478470");realm.commitTransaction();
-        realm.beginTransaction();MacAddress ma405 = realm.createObject(MacAddress.class);ma405.set_Id("E01C413BDF15");ma405.setSsid("QEBHW");ma405.setVid("Skyhook vid");ma405.setVname("Skyhook Office");ma405.setVlatitude("42.3519410");ma405.setVlongitude("-71.0478470");realm.commitTransaction();
-        realm.beginTransaction();MacAddress ma406 = realm.createObject(MacAddress.class);ma406.set_Id("E01C413BD515");ma406.setSsid("QEBHW");ma406.setVid("Skyhook vid");ma406.setVname("Skyhook Office");ma406.setVlatitude("42.3519410");ma406.setVlongitude("-71.0478470");realm.commitTransaction();
-        realm.beginTransaction();MacAddress ma407 = realm.createObject(MacAddress.class);ma407.set_Id("E01C413BD514");ma407.setSsid("QEBHW");ma407.setVid("Skyhook vid");ma407.setVname("Skyhook Office");ma407.setVlatitude("42.3519410");ma407.setVlongitude("-71.0478470");realm.commitTransaction();
-        realm.beginTransaction();MacAddress ma408 = realm.createObject(MacAddress.class);ma408.set_Id("E01C413BDF14");ma408.setSsid("QEBHW");ma408.setVid("Skyhook vid");ma408.setVname("Skyhook Office");ma408.setVlatitude("42.3519410");ma408.setVlongitude("-71.0478470");realm.commitTransaction();
-        realm.beginTransaction();MacAddress ma409 = realm.createObject(MacAddress.class);ma409.set_Id("506028363020");ma409.setSsid("QEBHW");ma409.setVid("Skyhook vid");ma409.setVname("Skyhook Office");ma409.setVlatitude("42.3519410");ma409.setVlongitude("-71.0478470");realm.commitTransaction();
+        RealmResults<MacAddress> results = realm.where(MacAddress.class).equalTo("mac", "E01C413BD514").findAll();
+        if (results.isEmpty()) {
+            realm.beginTransaction();MacAddress ma404 = realm.createObject(MacAddress.class);ma404.setMac("E01C413BD514");ma404.setSsid("QEBHW");ma404.setVid("Skyhook vid");ma404.setVname("Skyhook Office");ma404.setVlatitude("42.3519410");ma404.setVlongitude("-71.0478470");realm.commitTransaction();
+            realm.beginTransaction();MacAddress ma405 = realm.createObject(MacAddress.class);ma405.setMac("E01C413BDF15");ma405.setSsid("QEBHW");ma405.setVid("Skyhook vid");ma405.setVname("Skyhook Office");ma405.setVlatitude("42.3519410");ma405.setVlongitude("-71.0478470");realm.commitTransaction();
+            realm.beginTransaction();MacAddress ma406 = realm.createObject(MacAddress.class);ma406.setMac("E01C413BD515");ma406.setSsid("QEBHW");ma406.setVid("Skyhook vid");ma406.setVname("Skyhook Office");ma406.setVlatitude("42.3519410");ma406.setVlongitude("-71.0478470");realm.commitTransaction();
+            realm.beginTransaction();MacAddress ma407 = realm.createObject(MacAddress.class);ma407.setMac("E01C413BD514");ma407.setSsid("QEBHW");ma407.setVid("Skyhook vid");ma407.setVname("Skyhook Office");ma407.setVlatitude("42.3519410");ma407.setVlongitude("-71.0478470");realm.commitTransaction();
+            realm.beginTransaction();MacAddress ma408 = realm.createObject(MacAddress.class);ma408.setMac("E01C413BDF14");ma408.setSsid("QEBHW");ma408.setVid("Skyhook vid");ma408.setVname("Skyhook Office");ma408.setVlatitude("42.3519410");ma408.setVlongitude("-71.0478470");realm.commitTransaction();
+            realm.beginTransaction();MacAddress ma409 = realm.createObject(MacAddress.class);ma409.setMac("506028363020");ma409.setSsid("QEBHW");ma409.setVid("Skyhook vid");ma409.setVname("Skyhook Office");ma409.setVlatitude("42.3519410");ma409.setVlongitude("-71.0478470");realm.commitTransaction();
+        }
     }
 
     @Override

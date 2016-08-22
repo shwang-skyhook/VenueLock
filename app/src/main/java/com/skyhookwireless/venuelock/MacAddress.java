@@ -5,7 +5,7 @@ import io.realm.annotations.Required;
 
 public class MacAddress extends RealmObject {
     @Required
-    private String _id;
+    private String mac;
     @Required
     private String ssid;
     @Required
@@ -17,9 +17,9 @@ public class MacAddress extends RealmObject {
     @Required
     private String vlongitude;
 
-    public String get_Id() { return _id; }
+    public String getMac() { return mac; }
 
-    public void set_Id(String _id) { this._id = _id; }
+    public void setMac(String mac) { this.mac = mac; }
 
     public String getSsid() { return ssid; }
 

@@ -192,6 +192,7 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
         mHandler = new Handler();
 
         scanTextView = (TextView) getActivity().findViewById(R.id.scanTextView);
+        cityTextView = (TextView) getActivity().findViewById(R.id.cityTextView);
         wifiManager = (WifiManager) getActivity().getSystemService(Context.WIFI_SERVICE);
         cellManager = (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
         btManager = (BluetoothManager) getActivity().getSystemService(Context.BLUETOOTH_SERVICE);
@@ -526,6 +527,7 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
     private EditText venueEditText;
     private EditText userEditText;
     TextView scanTextView;
+    TextView cityTextView;
     String filename, proximity;
     private TelephonyManager cellManager;
     private BluetoothManager btManager;

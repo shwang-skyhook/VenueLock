@@ -246,7 +246,6 @@ public class ScanActivity extends AppCompatActivity
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
         mViewPager.setOffscreenPageLimit(3);
-
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
@@ -300,6 +299,8 @@ public class ScanActivity extends AppCompatActivity
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int item) {
                             blankFragment.setCity(items[item].toString());
+                            scanFragment.cityTextView.setText(items[item].toString());
+
                         }
                     });
 
