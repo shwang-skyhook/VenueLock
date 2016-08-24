@@ -399,10 +399,6 @@ public class ScanFragment extends Fragment implements View.OnClickListener, Sens
         return time;
     }
 
-    public void writeGroundTruth(String groundTruth) {
-        scanSB.append("Ground Truth Set: "+ groundTruth + "\n");
-    }
-
     public void writeVenueLockTrigger(ScannedVenue venue) {
         scanSB.append(getFileName() + ", " + proximity
                         + ", VenueLock Trigger VID: " + venue.getVID()
