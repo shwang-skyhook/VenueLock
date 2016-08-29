@@ -261,7 +261,7 @@ public class BlankFragment extends Fragment {
 
             if (wifiList != null && wifiList.length > 0) {
                 for (ScanResult sr : wifiList[0]) {
-                    if (sr.level >= -73) {   //Filter WiFi APs with Rssi >= -73 dBm
+                    if (sr.level >= -73 && sr.level < 0) {   //Filter WiFi APs with Rssi >= -73 dBm
                         String vid = "";
                         RealmResults<MacAddress> results = realm.where(MacAddress.class).equalTo("mac", sr.BSSID.replace(":", "").toUpperCase()).findAll();
                         ScannedVenue scannedVenue = new ScannedVenue();
