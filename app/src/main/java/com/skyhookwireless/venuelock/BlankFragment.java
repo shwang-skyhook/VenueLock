@@ -9,6 +9,7 @@ import android.net.wifi.ScanResult;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.IntegerRes;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
@@ -107,7 +108,9 @@ public class BlankFragment extends Fragment {
             realm.beginTransaction();MacAddress ma406 = realm.createObject(MacAddress.class);ma406.setMac("E01C413BD515");ma406.setSsid("QEBHW");ma406.setVid("Skyhook vid");ma406.setVname("Skyhook Office");ma406.setVlatitude("42.3519410");ma406.setVlongitude("-71.0478470");realm.commitTransaction();
             realm.beginTransaction();MacAddress ma407 = realm.createObject(MacAddress.class);ma407.setMac("E01C413BD514");ma407.setSsid("QEBHW");ma407.setVid("Skyhook vid");ma407.setVname("Skyhook Office");ma407.setVlatitude("42.3519410");ma407.setVlongitude("-71.0478470");realm.commitTransaction();
             realm.beginTransaction();MacAddress ma408 = realm.createObject(MacAddress.class);ma408.setMac("E01C413BDF14");ma408.setSsid("QEBHW");ma408.setVid("Skyhook vid");ma408.setVname("Skyhook Office");ma408.setVlatitude("42.3519410");ma408.setVlongitude("-71.0478470");realm.commitTransaction();
-            realm.beginTransaction();MacAddress ma409 = realm.createObject(MacAddress.class);ma409.setMac("506028363020");ma409.setSsid("QEBHW");ma409.setVid("Skyhook vid");ma409.setVname("Skyhook Office");ma409.setVlatitude("42.3519410");ma409.setVlongitude("-71.0478470");realm.commitTransaction();
+            realm.beginTransaction();MacAddress ma409 = realm.createObject(MacAddress.class);ma409.setMac("E01C413BDF14");ma409.setSsid("QEBHW");ma409.setVid("Skyhook vid");ma409.setVname("Skyhook Office");ma409.setVlatitude("42.3519410");ma409.setVlongitude("-71.0478470");realm.commitTransaction();
+            realm.beginTransaction();MacAddress ma410 = realm.createObject(MacAddress.class);ma410.setMac("E01C413BA795");ma410.setSsid("QEBHW");ma410.setVid("Skyhook vid");ma410.setVname("Skyhook Office");ma410.setVlatitude("42.3519410");ma410.setVlongitude("-71.0478470");realm.commitTransaction();
+            realm.beginTransaction();MacAddress ma411 = realm.createObject(MacAddress.class);ma411.setMac("E01C413BDCD5");ma411.setSsid("QEBHW");ma411.setVid("Skyhook vid");ma411.setVname("Skyhook Office");ma411.setVlatitude("42.3519410");ma411.setVlongitude("-71.0478470");realm.commitTransaction();
         }
     }
 
@@ -259,51 +262,52 @@ public class BlankFragment extends Fragment {
                 for (ScanResult sr : wifiList[0]) {
                     if (sr.level >= -73 && sr.level < 0) {   //Filter WiFi APs with Rssi >= -73 dBm
                         String vid = "";
+                        String name = "";
+                        String lat = "";
+                        String lng = "";
                         RealmResults<MacAddress> results = realm.where(MacAddress.class).equalTo("mac", sr.BSSID.replace(":", "").toUpperCase()).findAll();
-                        ScannedVenue scannedVenue = new ScannedVenue();
+                        //ScannedVenue scannedVenue = new ScannedVenue();
                         if (results.size() > 0) {
                             vid = results.first().getVid();
-                            scannedVenue.setVID(vid);
-                            scannedVenue.setName(results.first().getVname());
-                            scannedVenue.setvLatLng(results.first().getVlatitude(),results.first().getVlongitude());
-                            scannedVenue.addMac(sr.BSSID.replace(":", "").toUpperCase());
+                            name = results.first().getVname();
+                            lat = results.first().getVlatitude();
+                            lng = results.first().getVlongitude();
+
+//                            scannedVenue.setVID(vid);
+//                            scannedVenue.setName(results.first().getVname());
+//                            scannedVenue.setvLatLng(results.first().getVlatitude(),results.first().getVlongitude());
+//                            scannedVenue.addMacAndRssi(sr.BSSID.replace(":", "").toUpperCase(), sr.level);
                         }
                         if (vid != "") {
                             if (sr.level >= -65) {
                                 if (sr.level >= -55) {
                                     if (sr.level >= -50) {
                                         if (vidToScannedVenueCaseAv3.containsKey(vid)) {
-                                            vidToScannedVenueCaseAv3.get(vid).IncrementCount();
-                                            vidToScannedVenueCaseAv3.get(vid).addMac(sr.BSSID.replace(":", "").toUpperCase());
+                                            vidToScannedVenueCaseAv3.get(vid).addMacAndRssi(sr.BSSID.replace(":", "").toUpperCase(), sr.level);
                                         } else {
-                                            if (scannedVenue != null) {
-                                                vidToScannedVenueCaseAv3.put(vid, scannedVenue);
-                                            }
+                                            ScannedVenue sv = new ScannedVenue(vid, name, lat, lng, sr.BSSID.replace(":", "").toUpperCase(), sr.level);
+                                            vidToScannedVenueCaseAv3.put(vid, sv);
                                         }
                                     }
                                     if (vidToScannedVenueCaseBv3.containsKey(vid)) {
-                                        vidToScannedVenueCaseBv3.get(vid).IncrementCount();
-                                        vidToScannedVenueCaseBv3.get(vid).addMac(sr.BSSID.replace(":", "").toUpperCase());
+                                        vidToScannedVenueCaseBv3.get(vid).addMacAndRssi(sr.BSSID.replace(":", "").toUpperCase(), sr.level);
                                     } else {
-                                        if (scannedVenue != null) {
-                                            vidToScannedVenueCaseBv3.put(vid, scannedVenue);
-                                        }
-                                    }                                }
-                                if (vidToScannedVenueCaseCv3.containsKey(vid)) {
-                                    vidToScannedVenueCaseCv3.get(vid).IncrementCount();
-                                    vidToScannedVenueCaseCv3.get(vid).addMac(sr.BSSID.replace(":", "").toUpperCase());
-                                } else {
-                                    if (scannedVenue != null) {
-                                        vidToScannedVenueCaseCv3.put(vid, scannedVenue);
+                                        ScannedVenue sv = new ScannedVenue(vid, name, lat, lng, sr.BSSID.replace(":", "").toUpperCase(), sr.level);
+                                        vidToScannedVenueCaseBv3.put(vid, sv);
                                     }
-                                }                              }
-                            if (vidToScannedVenueCaseDv3.containsKey(vid)) {
-                                vidToScannedVenueCaseDv3.get(vid).IncrementCount();
-                                vidToScannedVenueCaseDv3.get(vid).addMac(sr.BSSID.replace(":", "").toUpperCase());
-                            } else {
-                                if (scannedVenue != null) {
-                                    vidToScannedVenueCaseDv3.put(vid, scannedVenue);
                                 }
+                                if (vidToScannedVenueCaseCv3.containsKey(vid)) {
+                                    vidToScannedVenueCaseCv3.get(vid).addMacAndRssi(sr.BSSID.replace(":", "").toUpperCase(), sr.level);
+                                } else {
+                                    ScannedVenue sv = new ScannedVenue(vid, name, lat, lng, sr.BSSID.replace(":", "").toUpperCase(), sr.level);
+                                    vidToScannedVenueCaseCv3.put(vid, sv);
+                                }
+                            }
+                            if (vidToScannedVenueCaseDv3.containsKey(vid)) {
+                                vidToScannedVenueCaseDv3.get(vid).addMacAndRssi(sr.BSSID.replace(":", "").toUpperCase(), sr.level);
+                            } else {
+                                ScannedVenue sv = new ScannedVenue(vid, name, lat, lng, sr.BSSID.replace(":", "").toUpperCase(), sr.level);
+                                vidToScannedVenueCaseDv3.put(vid, sv);
                             }
                         }
                     }
@@ -321,20 +325,11 @@ public class BlankFragment extends Fragment {
                             c. Lock to a venue with the maximum number of APs
                             note that one AP with RSSi higher than -50 dBm is sufficient to VL here
                         */
-
-                        Integer highest = Integer.MIN_VALUE;
-                        Integer current = Integer.MIN_VALUE;
-                        String venueId = "";
                         for (String vid : vidToScannedVenueCaseAv3.keySet()) {
-                            current = vidToScannedVenueCaseAv3.get(vid).getCount();
-                            if (current > highest) {
-                                highest = current;
-                                venueId = vid;
+                            if (vidToScannedVenueCaseAv3.get(vid).getCount() > 0) {
+                                vidToScannedVenueCaseAv3.get(vid).setTriggeringAlgorithm("A");
+                                return vidToScannedVenueCaseAv3.get(vid);
                             }
-                        }
-                        if (venueId != ""){
-                            vidToScannedVenueCaseAv3.get(venueId).setTriggeringAlgorithm("A");
-                            return vidToScannedVenueCaseAv3.get(venueId);
                         }
                         break;
                 }
@@ -349,19 +344,11 @@ public class BlankFragment extends Fragment {
                             b. Count number of APs per venue
                             c. Lock to a venue with the maximum number of APs with at least 3 MAC addresses
                         */
-                        Integer highest = Integer.MIN_VALUE;
-                        Integer current = Integer.MIN_VALUE;
-                        String venueId = "";
                         for (String vid : vidToScannedVenueCaseBv3.keySet()) {
-                            current = vidToScannedVenueCaseBv3.get(vid).getCount();
-                            if (current > highest) {
-                                highest = current;
-                                venueId = vid;
+                            if (vidToScannedVenueCaseBv3.get(vid).getCount() >= 3) {
+                                vidToScannedVenueCaseBv3.get(vid).setTriggeringAlgorithm("B");
+                                return vidToScannedVenueCaseBv3.get(vid);
                             }
-                        }
-                        if (highest >= 3) {
-                            vidToScannedVenueCaseBv3.get(venueId).setTriggeringAlgorithm("B");
-                            return vidToScannedVenueCaseBv3.get(venueId);
                         }
                         break;
                 }
@@ -376,19 +363,11 @@ public class BlankFragment extends Fragment {
                             b. Count number of APs per venue
                             c. Lock to a venue with the maximum number of APs with at least 4 MAC addresses
                         */
-                        Integer highest = Integer.MIN_VALUE;
-                        Integer current = Integer.MIN_VALUE;
-                        String venueId = "";
                         for (String vid : vidToScannedVenueCaseCv3.keySet()) {
-                            current = vidToScannedVenueCaseCv3.get(vid).getCount();
-                            if (current > highest) {
-                                highest = current;
-                                venueId = vid;
+                            if (vidToScannedVenueCaseCv3.get(vid).getCount() >= 4) {
+                                vidToScannedVenueCaseCv3.get(vid).setTriggeringAlgorithm("C");
+                                return vidToScannedVenueCaseCv3.get(vid);
                             }
-                        }
-                        if (highest >= 4) {
-                            vidToScannedVenueCaseCv3.get(venueId).setTriggeringAlgorithm("C");
-                            return vidToScannedVenueCaseCv3.get(venueId);
                         }
                         break;
                 }
@@ -403,19 +382,11 @@ public class BlankFragment extends Fragment {
                             b. Count number of APs per venue
                             c. Lock to a venue with the maximum number of APs with at least 9 (nine) MAC addresses
                         */
-                        Integer highest = Integer.MIN_VALUE;
-                        Integer current = Integer.MIN_VALUE;
-                        String venueId = "";
                         for (String vid : vidToScannedVenueCaseDv3.keySet()) {
-                            current = vidToScannedVenueCaseDv3.get(vid).getCount();
-                            if (current > highest) {
-                                highest = current;
-                                venueId = vid;
+                            if (vidToScannedVenueCaseDv3.get(vid).getCount() >= 9) {
+                                vidToScannedVenueCaseDv3.get(vid).setTriggeringAlgorithm("D");
+                                return vidToScannedVenueCaseDv3.get(vid);
                             }
-                        }
-                        if (highest >= 9) {
-                            vidToScannedVenueCaseDv3.get(venueId).setTriggeringAlgorithm("D");
-                            return vidToScannedVenueCaseDv3.get(venueId);
                         }
                         break;
                 }
@@ -428,15 +399,16 @@ public class BlankFragment extends Fragment {
             Log.d("Venuelock Algorithm", "Finished background db query");
             if (scannedVenue != null) {
                 if (!currentScanTriggers.contains(scannedVenue.getName())){
-                    currentScanTriggers.add(scannedVenue.getName());
-                    for (String venues : currentScanTriggers) {
-                        showNotification(venues);
-                        showToast("Triggered venue: " + scannedVenue.getName());
-                        venueTriggeredListener.plotVenue(scannedVenue);
-                    }
-                    strings.add(log);
-                    Log.d("Venuelock Trigger", log);
-                    Log.d("Venuelock Trigger", scannedVenue.getMacs());
+                        currentScanTriggers.add(scannedVenue.getName());
+                        for (String venues : currentScanTriggers) {
+                            showNotification(venues);
+                            //showToast("Triggered venue: " + scannedVenue.getName());
+                            venueTriggeredListener.plotVenue(scannedVenue);
+                        }
+                        String log = scannedVenue.getName() + ", Algorithm: " + scannedVenue.getTriggeringAlgorithm() + "\nMacs: " + scannedVenue.getMacs() + "\n" + getDate();
+                        strings.add(log);
+                        Log.d("Venuelock Trigger", log);
+                        Log.d("Venuelock Trigger", scannedVenue.getMacs());
                 }
                 stringAdapter.notifyDataSetChanged();
             }
@@ -491,7 +463,6 @@ public class BlankFragment extends Fragment {
     private Integer parseCount;
     private NotificationCompat.Builder mBuilder;
     private Integer INTERVAL = 3000;
-    private String walking;
     onVenueTriggeredListener venueTriggeredListener;
 
 }

@@ -8,6 +8,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.common.primitives.Doubles;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public class ScannedVenue {
@@ -15,12 +16,15 @@ public class ScannedVenue {
     public ScannedVenue() {
         vCount = 1;
         triggeringMacs = new ArrayList<String>();
+        triggeringMacsAndRssi = new HashMap<String, Integer>();
     }
-    public ScannedVenue(String name) {
+    public ScannedVenue(String vid, String name, String lat, String lng, String mac, Integer rssi) {
+        vId = vid;
         vName = name;
-        vCount = 1;
         triggeringAlgorithm = "None";
-        triggeringMacs = new ArrayList<String>();
+        this.setvLatLng(lat, lng);
+        triggeringMacsAndRssi = new HashMap<String, Integer>();
+        this.addMacAndRssi(mac, rssi);
     }
 
     public void IncrementCount() {
@@ -34,12 +38,17 @@ public class ScannedVenue {
     public void addMac(String mac) {
         triggeringMacs.add(mac);
     }
+
+    public void addMacAndRssi(String mac, Integer rssi) {
+        triggeringMacsAndRssi.put(mac, rssi);
+    }
+
     public String getMacs() {
-        return triggeringMacs.toString();
+        return triggeringMacsAndRssi.toString();
     }
 
     public Integer getCount() {
-        return vCount;
+        return triggeringMacsAndRssi.size();
     }
 
     public void setvLatLng(String lat, String lng) {
@@ -81,4 +90,6 @@ public class ScannedVenue {
     private Integer vCount;
     private String triggeringAlgorithm;
     private ArrayList<String> triggeringMacs;
+    private HashMap<String, Integer> triggeringMacsAndRssi;
+
 }
