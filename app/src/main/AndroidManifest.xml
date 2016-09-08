@@ -62,9 +62,6 @@
         <service
             android:name=".AcceleratorIntentService"
             android:exported="false" />
-        <service
-            android:name=".ActivityRecognitionService"
-            android:exported="false"></service>
     </application>
 
 </manifest>

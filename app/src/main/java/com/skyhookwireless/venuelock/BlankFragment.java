@@ -184,10 +184,6 @@ public class BlankFragment extends Fragment {
         this.scans = wifiList;
     }
 
-    public void setActivityRecognition(String walkingConfidence) {
-        walking = walkingConfidence;
-    }
-
     public void stopScanning() {
 
         parseCount = 0;
@@ -438,7 +434,6 @@ public class BlankFragment extends Fragment {
                         showToast("Triggered venue: " + scannedVenue.getName());
                         venueTriggeredListener.plotVenue(scannedVenue);
                     }
-                    String log = scannedVenue.getName() + ", Algorithm: " + scannedVenue.getTriggeringAlgorithm() + "\nActivity Report: "+ walking + "\n" + getDate();
                     strings.add(log);
                     Log.d("Venuelock Trigger", log);
                     Log.d("Venuelock Trigger", scannedVenue.getMacs());

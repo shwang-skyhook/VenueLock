@@ -39,9 +39,6 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.ActivityRecognition;
 import com.google.android.gms.maps.model.LatLng;
 import com.skyhookwireless.accelerator.AcceleratorClient;
 import com.skyhookwireless.accelerator.CampaignVenue;
@@ -68,41 +65,7 @@ public class ScanActivity extends AppCompatActivity
         AcceleratorClient.ConnectionCallbacks,
         AcceleratorClient.OnRegisterForCampaignMonitoringResultListener,
         AcceleratorClient.OnStopCampaignMonitoringResultListener,
-        AcceleratorClient.OnStartCampaignMonitoringResultListener,
-        GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener{
-
-    @Override
-    public void onConnected(Bundle bundle) {
-        Intent activityRecognitionIntent = new Intent( this, ActivityRecognitionService.class );
-        PendingIntent activityRecognitionPendingIntent = PendingIntent.getService( this, 0, activityRecognitionIntent, PendingIntent.FLAG_UPDATE_CURRENT );
-        ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates( mApiClient, 3000, activityRecognitionPendingIntent );
-
-        IntentFilter filter = new IntentFilter(ResponseReceiver.UPDATE_WALKING);
-        filter.addCategory(Intent.CATEGORY_DEFAULT);
-        receiver = new ResponseReceiver();
-        registerReceiver(receiver, filter);
-    }
-
-    public class ResponseReceiver extends BroadcastReceiver {
-        public static final String UPDATE_WALKING = "com.skyhookwireless.venuelock.intent.action.UPDATE_WALKING";
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String activityReport = intent.getStringExtra(ActivityRecognitionService.UPDATE_WALKING);
-            blankFragment.setActivityRecognition(activityReport);
-        }
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-
-    }
+        AcceleratorClient.OnStartCampaignMonitoringResultListener{
 
     @Override
     public void onStopCampaignMonitoringResult(int i, String s) {
@@ -256,14 +219,6 @@ public class ScanActivity extends AppCompatActivity
 
         accelerator = new AcceleratorClient(this, VENUELOCK, this, this);
         accelerator.connect();
-
-        mApiClient = new GoogleApiClient.Builder(this)
-                .addApi(ActivityRecognition.API)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .build();
-
-        mApiClient.connect();
     }
 
     @Override
@@ -325,9 +280,19 @@ public class ScanActivity extends AppCompatActivity
         registerReceiver(receiver, filter);
     }
 
+    public class ResponseReceiver extends BroadcastReceiver {
+        public static final String UPDATE_WALKING = "com.skyhookwireless.venuelock.intent.action.UPDATE_WALKING";
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String activityReport = intent.getStringExtra(AcceleratorIntentService.ACTION_FOO);
+            //blankFragment.setActivityRecognition(activityReport);
+        }
+    }
+
+
     @Override
     public void onDisconnected() {
-        unregisterReceiver(receiver);
     }
 
     @Override
@@ -504,8 +469,6 @@ public class ScanActivity extends AppCompatActivity
     private BlankFragment blankFragment;
     private AcceleratorClient accelerator;
     private String fileName;
-    private Boolean mLocationPermissions;
     private ResponseReceiver receiver;
-    public GoogleApiClient mApiClient;
-    public Boolean walking;
+
 }
