@@ -261,6 +261,7 @@ public class ScanActivity extends AppCompatActivity
     protected void onDestroy() {
         if (accelerator != null) {accelerator.disconnect();
         }
+        unregisterReceiver(receiver);
         super.onDestroy();
     }
 
